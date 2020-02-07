@@ -30,7 +30,7 @@ module cpu(
   wire [3:0] r2_address;
   wire [3:0] opcode;
   wire [2:0] instruction_codes;
-  reg [31:0] r1_preshift, r2, rd;
+  reg [31:0] r1_preshift, r2;
   reg [32:0] data;
   wire do_write;
   wire s_bit; // also L bit for load and Store
@@ -40,7 +40,6 @@ module cpu(
   wire [31:0] r1; //post shift r1
 
   assign s_bit = inst[20];
-  assign rd = inst[12+:4];
   assign branch_address = inst[0+:24];
   assign rn_address = inst[16+:4];    // r2
   assign rm_address = inst[0+:4];     // r1

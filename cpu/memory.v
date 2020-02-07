@@ -8,8 +8,8 @@ module memory ( input clk_i
 
   integer i;
   initial begin
-    for ( i = 0; i < 12; i++ )
-      { memory[data_addr_i], memory[data_addr_i+1], memory[data_addr_i+2], memory[data_addr_i+3] } <= i;
+    for ( i = 0; i < 12; i = i + 4 )
+      { memory[i], memory[i+1], memory[i+2], memory[i+3] } <= 32'b0;
   end
 
   always @( posedge clk_i ) begin
