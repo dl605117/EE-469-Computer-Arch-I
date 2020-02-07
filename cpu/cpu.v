@@ -26,12 +26,14 @@ module cpu(
   wire [3:0] rn_address;
   wire [3:0] rm_address;
   wire [3:0] rd_address;
+  wire [3:0] r1_address;
+  wire [3:0] r2_address;
   wire [3:0] opcode;
   wire [2:0] instruction_codes;
   reg [31:0] r1_preshift, r2, rd;
   reg [32:0] data;
   wire do_write;
-  wire s_bit;
+  wire s_bit; // also L bit for load and Store
   wire [7:0] immediate;
   wire [3:0] rotate;
   wire [23:0] branch_address;
@@ -49,9 +51,20 @@ module cpu(
   assign immediate = inst[0+:8];
 
   code_memory cm ( pc_r, inst );
-  register_file rf ( clk, rm_address, rn_address, do_write, rd_address, data[0+:32], r1_preshift, r2 );
+  register_file rf ( clk, r1_address, r2_address, do_write, rd_address, data[0+:32], r1_preshift, r2 );
   rotate rot ( rotate, immediate, operand2 );
   shifter shifting (inst, r1_preshift, r1);
+
+  // ************************************
+  // ***** Register File Addressing *****
+  // ************************************
+  assign r2_address = rn_address;
+  always @(*) begin
+    if ( instruction_codes == 3'b010 )
+      r1_address = rm_address;
+    else
+      r1_address = rd_address;
+  end
 
   // ************************************
   // ***** NORMAL OPERATIONS & BL *******
@@ -59,8 +72,8 @@ module cpu(
   always @(*) begin
     data = 0;
     if ( instruction_codes == 3'b010)    // LOAD AND STORE
-      if(inst[20] == 1)
-        if(inst[23] == 1)
+      if ( s_bit ) // also L bit for load and Store
+        if ( U_bit )
           data = r2 + inst[11:0];
         else
           data = r2 - inst[11:0];
@@ -167,15 +180,23 @@ module cpu(
   // ************************************
   // ******** LOADING & STORING *********
   // ************************************
+  reg [31:0] mem_addr;
+  wire r_not_w;
+  assign r_not_w = 1'b1;
+  reg [31:0] mem_data_o;
+  wire U_bit = inst[23]; // 1 = add, 0 = subtract from base
+
+  memory mem ( .clk_i(clk), .data_addr_i(mem_addr), .data_i(r2), .r_not_w_i(r_not_w), .data_o(mem_data_o) );
 
   //store data in memory
   always @(posedge clk) begin
-    if (instruction_codes == 010 && inst[20] == 0)
-      if(inst[23] == 1)
-        memory[r2 + inst[11:0]] <= st_data;
+    if ( instruction_codes == 3'b010 && ~s_bit ) // also L bit for load and Store
+      if( U_bit )
+        mem_addr <= rd_address + inst[11:0];
       else
-        memory[r2 - inst[11:0]] <= st_data;
-    end
+        mem_addr <= rd_address - inst[11:0];
+    else
+      mem_addr <= mem_addr;
   end
 
   // ************************************

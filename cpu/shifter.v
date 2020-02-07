@@ -1,8 +1,10 @@
-module shifter (
-    input [31:0] inst_i;
-    input [31:0] r1_i;
-    output [31:0] r1_shift_o;
-)
+module shifter ( input [31:0] inst_i
+  , input [31:0] r1_i
+  , output [31:0] r1_shift_o
+  );
+
+  wire [4:0] shift_imm;
+  wire [2:0] shift_type;
 
   assign shift_imm = inst_i[11:7];
   assign shift_type = inst_i[6:5];

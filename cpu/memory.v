@@ -8,7 +8,7 @@ module memory ( input clk_i
 
   integer i;
   initial begin
-    for ( i = 0; i < 3; i++ )
+    for ( i = 0; i < 12; i++ )
       { memory[data_addr_i], memory[data_addr_i+1], memory[data_addr_i+2], memory[data_addr_i+3] } <= i;
   end
 
