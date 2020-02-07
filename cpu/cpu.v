@@ -14,17 +14,14 @@ module cpu(
   // ************************************
   // ***** TO DOS ***********
   // ************************************
-  // Change PC Clk period update to 4
   // fix load and STORE
-  //    ADD mem module
-  // complete Condition Codes
   // clean up OPERATIONS
   // write BACK
 
 
 
   reg [31:0] inst;
-  reg [31:0] pc;
+  reg [31:0] pc_r, pc_n;
   wire [31:0] operand2;
   wire [3:0] rn_address;
   wire [3:0] rm_address;
@@ -34,14 +31,13 @@ module cpu(
   reg [31:0] r1, r2, rd;
   reg [32:0] data;
   wire do_write;
-  reg toggle_pc_update, comb_toggle_pc_update; // toggle_read might not be neccessary
   wire s_bit;
   wire [7:0] immediate;
   wire [3:0] rotate;
   wire [23:0] branch_address;
 
   assign s_bit = inst[20];
-  //assign rd = inst[12+:4];
+  assign rd = inst[12+:4];
   assign branch_address = inst[0+:24];
   assign rn_address = inst[16+:4];    // r2
   assign rm_address = inst[0+:4];     // r1
@@ -51,7 +47,7 @@ module cpu(
   assign rotate = inst[8+:4];
   assign immediate = inst[0+:8];
 
-  code_memory cm ( pc, inst );
+  code_memory cm ( pc_r, inst );
   register_file rf ( clk, rm_address, rn_address, do_write, rd_address, data[0+:32], r1, r2 );
   rotate rot ( rotate, immediate, operand2 );
 
@@ -69,12 +65,12 @@ module cpu(
       else
         data = rd_address + inst[11:0];
     else if ( instruction_codes == 3'b101 && do_jump )    // Setting Link Address for Branch
-      data = inst[24] ? pc + 4 : 0;
+      data = inst[24] ? pc_r + 4 : 0;
     else
       data = ALU_data;
   end
 
-  wire [31:0] ALU_data;
+  wire [32:0] ALU_data;
   ALU alu (.instruction_codes(instruction_codes),.opcode(opcode), .r2(r2), .r1(r1), .operand2(operand2), .data(ALU_data));
   // ************************************
   // ************ FLAGS *****************
@@ -100,21 +96,21 @@ module cpu(
     else
       c_flag = c_flag;
 
-    if ( update_flags[3] )
-      v_flag = data[32];     // overflow flag
-    else
-      if(instruction_codes = 3'b001)
+    if ( update_flags[3] )   // overflow flag
+      if(instruction_codes == 3'b001)
         v_flag = (opcode == 4'b0100) ? operand2[31] & r2[31] && (!data[31]) || (!operand2[31] & !r2[31] && data[31])
               : !operand2[31] & r2[31] && (!data[31]) || (operand2[31] & !r2[31] && data[31]);
       else
         v_flag = (opcode == 4'b0100) ? r1[31] & r2[31] && (!data[31]) || (!r1[31] & !r2[31] && data[31])
               : r1[31] & !r2[31] && (!data[31]) || (!r1[31] & r2[31] && data[31]);
+    else
+      v_flag = v_flag;
   end
 
   //4'bxxxx : {n_flag, z_flag, c_flag, v_flag}
   // SETTING UPDATE FLAGS
   always @( posedge clk ) begin
-    if ( ~toggle_pc_update & s_bit & ( instruction_codes == 3'b000 | instruction_codes == 3'b001 ) ) begin
+    if ( pc_r == 2'b01 & s_bit & ( instruction_codes == 3'b000 | instruction_codes == 3'b001 ) ) begin
       case ( cond )
         4'b0000: update_flags <= 4'b1110;  //AND
         4'b0001: update_flags <= 4'b1110;  // XOR
@@ -195,30 +191,40 @@ module cpu(
   // ************************************
   // **** BRANCHING and INCREMENT *******
   // ************************************
+  reg [1:0] pc_state_n, pc_state_r;
+
   initial begin
-    toggle_pc_update = 1'b1;
-    pc = 32'b0;
+    pc_r = 0;
+    pc_state_r = 2'b00;
   end
 
-  always @(*)
-    comb_toggle_pc_update = toggle_pc_update ^ 1'b1;
+  always @(*) begin
+    if ( pc_state_r == 4 )
+      pc_state_n = 0;
+    else
+      pc_state_n = pc_state_r + 1;
+  end
+
+  always @(*) begin
+    if ( pc_state_r == 2'b00 )
+      if ( instruction_codes == 3'b101 && do_jump )   // Does Branch with Conditions
+        pc_n = pc_r + 8 + { {6{branch_address[23]}}, branch_address, 2'b0 };
+      else
+        pc_n = pc_r >= 64 ? 0 : pc_r + 4;
+    else
+      pc_n = pc_r;
+  end
 
   always @(posedge clk) begin  // CHANGE 4 STAGE CLK CYCLE 1. FETCH INST 2. READ REGISTERS/COMPUTE 3. MEM 4. WRITE
-    toggle_pc_update <= comb_toggle_pc_update;
-    if ( toggle_pc_update )
-      if ( instruction_codes == 3'b101 && do_jump )   // Does Branch with Conditions
-        pc <= pc + 8 + { {6{branch_address[23]}}, branch_address, 2'b0 };
-      else
-        pc <= pc >= 64 ? 0 : pc + 4;
-    else
-      pc <= pc;
+    pc_state_r <= pc_state_n;
+    pc_r <= pc_n;
   end
 
   // Controls the LED on the board.
   assign led = 1'b0;
 
   // These are how you communicate back to the serial port debugger.
-  assign debug_port1 = pc[0+:8];
+  assign debug_port1 = pc_r[0+:8];
   assign debug_port2 = r1[0+:8];
   assign debug_port3 = r2[0+:8];
   assign debug_port4 = operand2[0+:8];
