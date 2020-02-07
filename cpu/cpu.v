@@ -43,8 +43,8 @@ module cpu(
   assign s_bit = inst[20];
   //assign rd = inst[12+:4];
   assign branch_address = inst[0+:24];
-  assign rn_address = inst[16+:4];    // r1
-  assign rm_address = inst[0+:4];     // r2
+  assign rn_address = inst[16+:4];    // r2
+  assign rm_address = inst[0+:4];     // r1
   assign opcode = inst[21+:4];
   assign instruction_codes = inst[25+:3];
   assign do_write = 1'b0; // for now, will not write to register_file
