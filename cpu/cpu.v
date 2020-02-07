@@ -167,14 +167,14 @@ module cpu(
   // ************************************
 
   //store data in memory
-  // always @(posedge clk) begin
-  //   if (inst[27:25] == 010 && inst[20] == 0)
-  //     if(inst[23] == 1)
-  //       memory[r2 + inst[11:0]] <= st_data;
-  //     else
-  //       memory[r2 - inst[11:0]] <= st_data;
-  //   end
-  // end
+  always @(posedge clk) begin
+    if (instruction_codes == 010 && inst[20] == 0)
+      if(inst[23] == 1)
+        memory[r2 + inst[11:0]] <= st_data;
+      else
+        memory[r2 - inst[11:0]] <= st_data;
+    end
+  end
 
   // ************************************
   // **** WRITING BACK TO REGISTERS *****
@@ -192,6 +192,10 @@ module cpu(
   // **** BRANCHING and INCREMENT *******
   // ************************************
   reg [1:0] pc_state_n, pc_state_r;
+  // 2'b00 : Fetch Instructions
+  // 2'b01 : Read Registers
+  // 2'b10 : Deal with Memory
+  // 2'b11 : Write Back
 
   initial begin
     pc_r = 0;
