@@ -60,37 +60,7 @@ module cpu(
   // ************************************
   always @(*) begin
     data = 0;
-    if ( instruction_codes == 3'b001 )
-      case( opcode ) //add instruction bits 21 to 24
-        4'b0000: data = r2 & operand2;           //and
-        4'b0001: data = r2 ^ operand2;           //exclusive or
-        4'b0010: data = r2 - operand2;           //sub
-        4'b0100: data = operand2 + r2;           //add
-        4'b1000: data = r2 && operand2;          //test
-        4'b1001: data = r2 ^ operand2;           //test equivalence
-        4'b1010: data = r2 - operand2;           //compare
-        4'b1100: data = r2 | operand2;          //or
-        4'b1101: data = operand2;                //move, need to check, it says operand2 which is 12 bits long
-        4'b1110: data = r2 & ~operand2;         //bit clear
-        4'b1111: data = 8'hFFFFFFFF ^ operand2;   //move not
-        default: data = 32'b0;                      // not sure
-      endcase
-    else if ( instruction_codes == 3'b000 )
-      case( opcode ) //add instruction bits 21 to 24
-        4'b0000: data = r2 & r1;           //and
-        4'b0001: data = r2 ^ r1;           //exclusive or
-        4'b0010: data = r1 - r2;           //sub
-        4'b0100: data = r1 + r2;           //add
-        4'b1000: data = r2 && r1;          //test
-        4'b1001: data = r2 ^ r1;           //test equivalence
-        4'b1010: data = r1 - r2;           //compare
-        4'b1100: data = r2 | r1;          //orr
-        4'b1101: data = r1;                //move, need to check, it says operand2 which is 12 bits long
-        4'b1110: data = ~r2 & r1;         //bit clear
-        4'b1111: data = 8'hFFFFFFFF ^ r1;   //move not
-        default: data = 32'b0;                       // not sure
-      endcase
-    else if ( instruction_codes == 3'b010)    // LOAD AND STORE
+    if ( instruction_codes == 3'b010)    // LOAD AND STORE
       if(inst[20] == 1)
         if(inst[23] == 1)
           data = r2 + inst[11:0];
@@ -100,8 +70,12 @@ module cpu(
         data = rd_address + inst[11:0];
     else if ( instruction_codes == 3'b101 && do_jump )    // Setting Link Address for Branch
       data = inst[24] ? pc + 4 : 0;
+    else
+      data = ALU_data;
   end
 
+  wire [31:0] ALU_data;
+  ALU alu (.instruction_codes(instruction_codes),.opcode(opcode), .r2(r2), .r1(r1), .operand2(operand2), .data(ALU_data));
   // ************************************
   // ************ FLAGS *****************
   // ************************************
@@ -129,14 +103,20 @@ module cpu(
     if ( update_flags[3] )
       v_flag = data[32];     // overflow flag
     else
-      v_flag = v_flag;
-
+      if(instruction_codes = 3'b001)
+        v_flag = (opcode == 4'b0100) ? operand2[31] & r2[31] && (!data[31]) || (!operand2[31] & !r2[31] && data[31])
+              : !operand2[31] & r2[31] && (!data[31]) || (operand2[31] & !r2[31] && data[31]);
+      else
+        v_flag = (opcode == 4'b0100) ? r1[31] & r2[31] && (!data[31]) || (!r1[31] & !r2[31] && data[31])
+              : r1[31] & !r2[31] && (!data[31]) || (!r1[31] & r2[31] && data[31]);
   end
 
+  //4'bxxxx : {n_flag, z_flag, c_flag, v_flag}
   // SETTING UPDATE FLAGS
   always @( posedge clk ) begin
     if ( ~toggle_pc_update & s_bit & ( instruction_codes == 3'b000 | instruction_codes == 3'b001 ) ) begin
       case ( cond )
+        4'b0000: update_flags <= 4'b1110;  //AND
         4'b0001: update_flags <= 4'b1110;  // XOR
         4'b0010: update_flags <= 4'b1111;  // SUB
         4'b0100: update_flags <= 4'b1111;  // ADD
