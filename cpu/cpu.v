@@ -28,13 +28,14 @@ module cpu(
   wire [3:0] rd_address;
   wire [3:0] opcode;
   wire [2:0] instruction_codes;
-  reg [31:0] r1, r2, rd;
+  reg [31:0] r1_preshift, r2, rd;
   reg [32:0] data;
   wire do_write;
   wire s_bit;
   wire [7:0] immediate;
   wire [3:0] rotate;
   wire [23:0] branch_address;
+  wire [31:0] r1; //post shift r1
 
   assign s_bit = inst[20];
   assign rd = inst[12+:4];
@@ -48,8 +49,9 @@ module cpu(
   assign immediate = inst[0+:8];
 
   code_memory cm ( pc_r, inst );
-  register_file rf ( clk, rm_address, rn_address, do_write, rd_address, data[0+:32], r1, r2 );
+  register_file rf ( clk, rm_address, rn_address, do_write, rd_address, data[0+:32], r1_preshift, r2 );
   rotate rot ( rotate, immediate, operand2 );
+  shifter shifting (inst, r1_preshift, r1);
 
   // ************************************
   // ***** NORMAL OPERATIONS & BL *******
