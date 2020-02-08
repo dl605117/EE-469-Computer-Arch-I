@@ -14,10 +14,10 @@ module cpu(
   // ************************************
   // ***** TO DOS ***********
   // ************************************
-  // fix load and STORE
-  // clean up OPERATIONS
+  // Debug load and STORE
+  // CPSR
   // write BACK
-
+  // Double check Conditions work
 
 
   reg [31:0] inst;
@@ -256,6 +256,6 @@ module cpu(
   assign debug_port4 = operand2[0+:8];
   assign debug_port5 = data[0+:8];
   assign debug_port6 = { do_jump, 1'b0, n_flag, z_flag, 2'b0, c_flag, v_flag };
-  assign debug_port7 = opcode;
+  assign debug_port7 = mem_data_o;
 
 endmodule
