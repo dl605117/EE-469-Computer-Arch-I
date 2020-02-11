@@ -16,9 +16,15 @@ module cpu(
   // ************************************
   // Debug load and STORE
   // CPSR
-  // write BACK
+  // PC - r15 - DONE??
+  // write BACK - DONE??
+  // SHIFTERS
   // Double check Conditions work
 
+  parameter fetch = 2'b00;
+  parameter read_reg = 2'b01;
+  parameter exec_mem = 2'b10;
+  parameter write = 2'b11;
 
   reg [31:0] inst;
   reg [31:0] pc_r, pc_n;
@@ -50,7 +56,7 @@ module cpu(
   assign immediate = inst[0+:8];
 
   code_memory cm ( pc_r, inst );
-  register_file rf ( clk, r1_address, r2_address, do_write, rd_address, data[0+:32], r1_preshift, r2 );
+  register_file rf ( clk, r1_address, r2_address, do_write, rd_address, data[0+:32], pc_r, r1_preshift, r2 );
   rotate rot ( rotate, immediate, operand2 );
   shifter shifting (inst, r1_preshift, r1);
 
@@ -59,10 +65,22 @@ module cpu(
   // ************************************
   assign r2_address = rn_address;
   always @(*) begin
-    if ( instruction_codes == 3'b010 )
-      r1_address = rm_address;
-    else
+    if ( instruction_codes == 3'b010 ) // LOAD and STORE
       r1_address = rd_address;
+    else
+      r1_address = rm_address;
+  end
+
+  // ************************************
+  // ***** Register File Writing ********
+  // ************************************
+  always @(*) begin
+    do_write = 1'b0;
+    if ( pc_state_r == write && cond_met ) begin
+      if ( ( instruction_codes == 3'b010 && s_bit ) || instruction_codes == 3'b001 ||
+            instruction_codes == 3'b000 )
+        do_write = 1'b1;
+    end
   end
 
   // ************************************
@@ -70,15 +88,15 @@ module cpu(
   // ************************************
   always @(*) begin
     data = 0;
-    if ( instruction_codes == 3'b010)    // LOAD AND STORE
-      if ( s_bit ) // also L bit for load and Store
+    if ( instruction_codes == 3'b010 )    // LOAD AND STORE
+      if ( s_bit ) // also L bit for load and Store 1 = Load 0 = Store
         if ( U_bit )
           data = r2 + inst[11:0];
         else
           data = r2 - inst[11:0];
       else
         data = rd_address + inst[11:0];
-    else if ( instruction_codes == 3'b101 && do_jump )    // Setting Link Address for Branch
+    else if ( instruction_codes == 3'b101 && cond_met )    // Setting Link Address for Branch
       data = inst[24] ? pc_r + 4 : 0;
     else
       data = ALU_data;
@@ -151,28 +169,28 @@ module cpu(
   // cond code
   wire [3:0] cond;
   assign cond = inst[28+:4];
-  wire do_jump;
+  wire cond_met;
 
   always @(*) begin
-    do_jump = 1'b0;
+    cond_met = 1'b0;
     case ( cond )    // Checking Condition Codes for Jump
-      4'b0000: if ( z_flag ) do_jump = 1'b1;                          // EQ
-              else do_jump = 1'b0;
-      4'b0001: if ( ~z_flag ) do_jump = 1'b1;				                  // NE
-      4'b0010: if ( c_flag ) do_jump = 1'b1;				                  // CS/HS
-      4'b0011: if ( ~c_flag ) do_jump = 1'b1; 				                // CC/LO
-      4'b0100: if ( n_flag ) do_jump = 1'b1; 				                  // MI
-      4'b0101: if ( ~n_flag ) do_jump = 1'b1;				                  // PL
-      4'b0110: if ( v_flag ) do_jump = 1'b1;				                  // VS
-      4'b0111: if ( ~v_flag ) do_jump = 1'b1; 				                // VC
-      4'b1000: if ( c_flag && ~z_flag ) do_jump = 1'b1; 			        // HI
-      4'b1001: if ( ~c_flag && z_flag ) do_jump = 1'b1;			          // LS
-      4'b1010: if ( n_flag == v_flag ) do_jump = 1'b1; 		            // GE
-      4'b1011: if ( n_flag != v_flag ) do_jump = 1'b1;		            // LT
-      4'b1100: if ( ~z_flag && (n_flag == v_flag) ) do_jump = 1'b1; 	// GT
-      4'b1101: if ( z_flag && (n_flag != v_flag) ) do_jump = 1'b1;	  // LE
-      4'b1110: do_jump = 1'b1;                                        // ALWAYS
-      default: do_jump = 0; 				                                  // Otherwise
+      4'b0000: if ( z_flag ) cond_met = 1'b1;                          // EQ
+              else cond_met = 1'b0;
+      4'b0001: if ( ~z_flag ) cond_met = 1'b1;				                  // NE
+      4'b0010: if ( c_flag ) cond_met = 1'b1;				                  // CS/HS
+      4'b0011: if ( ~c_flag ) cond_met = 1'b1; 				                // CC/LO
+      4'b0100: if ( n_flag ) cond_met = 1'b1; 				                  // MI
+      4'b0101: if ( ~n_flag ) cond_met = 1'b1;				                  // PL
+      4'b0110: if ( v_flag ) cond_met = 1'b1;				                  // VS
+      4'b0111: if ( ~v_flag ) cond_met = 1'b1; 				                // VC
+      4'b1000: if ( c_flag && ~z_flag ) cond_met = 1'b1; 			        // HI
+      4'b1001: if ( ~c_flag && z_flag ) cond_met = 1'b1;			          // LS
+      4'b1010: if ( n_flag == v_flag ) cond_met = 1'b1; 		            // GE
+      4'b1011: if ( n_flag != v_flag ) cond_met = 1'b1;		            // LT
+      4'b1100: if ( ~z_flag && (n_flag == v_flag) ) cond_met = 1'b1; 	// GT
+      4'b1101: if ( z_flag && (n_flag != v_flag) ) cond_met = 1'b1;	  // LE
+      4'b1110: cond_met = 1'b1;                                        // ALWAYS
+      default: cond_met = 0; 				                                  // Otherwise
     endcase
   end
 
@@ -181,7 +199,7 @@ module cpu(
   // ************************************
   reg [31:0] mem_addr;
   wire r_not_w;
-  assign r_not_w = 1'b1;
+  assign r_not_w = ~(pc_state_r == write && instruction_codes == 3'b010 && ~s_bit);
   reg [31:0] mem_data_o;
   wire U_bit = inst[23]; // 1 = add, 0 = subtract from base
 
@@ -189,11 +207,14 @@ module cpu(
 
   //store data in memory
   always @(posedge clk) begin
-    if ( instruction_codes == 3'b010 && ~s_bit ) // also L bit for load and Store
-      if( U_bit )
-        mem_addr <= rd_address + inst[11:0];
+    if ( pc_state_n == exec_mem )
+      if ( instruction_codes == 3'b010 && ~s_bit ) // also L bit for load and Store 1 = Load 0 = Store
+        if( U_bit )
+          mem_addr <= rd_address + inst[11:0];
+        else
+          mem_addr <= rd_address - inst[11:0];
       else
-        mem_addr <= rd_address - inst[11:0];
+        mem_addr <= mem_addr;
     else
       mem_addr <= mem_addr;
   end
@@ -219,9 +240,10 @@ module cpu(
   // 2'b10 : Deal with Memory
   // 2'b11 : Write Back
 
+
   initial begin
     pc_r = 0;
-    pc_state_r = 2'b00;
+    pc_state_r = write;
   end
 
   always @(*) begin
@@ -232,11 +254,13 @@ module cpu(
   end
 
   always @(*) begin
-    if ( pc_state_r == 2'b00 )
-      if ( instruction_codes == 3'b101 && do_jump )   // Does Branch with Conditions
+    if ( pc_state_r == write )
+      if ( instruction_codes == 3'b101 && cond_met )   // Does Branch with Conditions
         pc_n = pc_r + 8 + { {6{branch_address[23]}}, branch_address, 2'b0 };
       else
         pc_n = pc_r >= 64 ? 0 : pc_r + 4;
+    else if ( pc_state_r == exec_mem && rd_address == 4'b1111 )
+      pc_n = data;
     else
       pc_n = pc_r;
   end
@@ -255,7 +279,7 @@ module cpu(
   assign debug_port3 = r2[0+:8];
   assign debug_port4 = operand2[0+:8];
   assign debug_port5 = data[0+:8];
-  assign debug_port6 = { do_jump, 1'b0, n_flag, z_flag, 2'b0, c_flag, v_flag };
-  assign debug_port7 = mem_data_o;
+  assign debug_port6 = { cond_met, 1'b0, n_flag, z_flag, 2'b0, c_flag, v_flag };
+  assign debug_port7 = pc_state_n;
 
 endmodule
