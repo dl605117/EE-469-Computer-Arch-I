@@ -5,6 +5,11 @@ module ALU (
   ,output [32:0] data
 );
 
+wire [31:0] operand2_temp;
+wire [31:0] r2_temp;
+
+assign operand2_temp = ~operand2;
+assign r2_temp = ~r2;
 
 always @(*) begin
   data = 0;
@@ -12,11 +17,11 @@ always @(*) begin
     case( opcode ) //add instruction bits 21 to 24
       4'b0000: data = r2 & operand2;           //and
       4'b0001: data = r2 ^ operand2;           //exclusive or
-      4'b0010: data = r2 - operand2;           //sub
+      4'b0010: data = r2 + operand2_temp + 1;           //sub
       4'b0100: data = operand2 + r2;           //add
       4'b1000: data = r2 && operand2;          //test
       4'b1001: data = r2 ^ operand2;           //test equivalence
-      4'b1010: data = r2 - operand2;           //compare
+      4'b1010: data = r2 + operand2_temp + 1;           //compare
       4'b1100: data = r2 | operand2;          //or
       4'b1101: data = operand2;                //move, need to check, it says operand2 which is 12 bits long
       4'b1110: data = r2 & ~operand2;         //bit clear
@@ -27,11 +32,11 @@ always @(*) begin
     case( opcode ) //add instruction bits 21 to 24
       4'b0000: data = r2 & r1;           //and
       4'b0001: data = r2 ^ r1;           //exclusive or
-      4'b0010: data = r1 - r2;           //sub
+      4'b0010: data = r1 + r2_temp + 1;           //sub
       4'b0100: data = r1 + r2;           //add
       4'b1000: data = r2 && r1;          //test
       4'b1001: data = r2 ^ r1;           //test equivalence
-      4'b1010: data = r1 - r2;           //compare
+      4'b1010: data = r1 + r2_temp + 1;           //compare
       4'b1100: data = r2 | r1;          //orr
       4'b1101: data = r1;                //move, need to check, it says operand2 which is 12 bits long
       4'b1110: data = ~r2 & r1;         //bit clear

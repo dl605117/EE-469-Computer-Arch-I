@@ -15,7 +15,6 @@ module cpu(
   // ***** TO DOS ***********
   // ************************************
   // Debug load and STORE
-  // CPSR - DONE??
   // PC - r15 - DONE??
   // write BACK - DONE??
   // SHIFTERS
@@ -46,7 +45,7 @@ module cpu(
   wire [23:0] branch_address;
   wire [31:0] r1; //post shift r1
 
-  assign CPSR = { n_flag, z_flag, c_flag, v_flag, 22'b0,5'b11111 };
+  assign CPSR = { n_flag, z_flag, c_flag, v_flag, 22'b0, 5'b11111 };
   assign s_bit = inst[20];
   assign branch_address = inst[0+:24];
   assign rn_address = inst[16+:4];    // r2
@@ -115,22 +114,22 @@ module cpu(
 
   // UPDATING FLAGS
   always @(*) begin
-    if ( update_flags[0] )
+    if ( update_flags[3] )
       n_flag = data[31];     // negative flag
     else
     n_flag = n_flag;
 
-    if ( update_flags[1] )
+    if ( update_flags[2] )
       z_flag = (data == 0);     // zero flag
     else
       z_flag = z_flag;
 
-    if ( update_flags[2] )
+    if ( update_flags[1] )
       c_flag = data[32];     // carry flag
     else
       c_flag = c_flag;
 
-    if ( update_flags[3] )   // overflow flag
+    if ( update_flags[0] )   // overflow flag
       if(instruction_codes == 3'b001)
         v_flag = (opcode == 4'b0100) ? operand2[31] & r2[31] && (!data[31]) || (!operand2[31] & !r2[31] && data[31])
               : !operand2[31] & r2[31] && (!data[31]) || (operand2[31] & !r2[31] && data[31]);
@@ -144,9 +143,9 @@ module cpu(
   //4'bxxxx : {n_flag, z_flag, c_flag, v_flag}
   // SETTING UPDATE FLAGS
   always @( posedge clk ) begin
-    if ( pc_r == 2'b01 & s_bit & ( instruction_codes == 3'b000 | instruction_codes == 3'b001 ) ) begin
-      case ( cond )
-        4'b0000: update_flags <= 4'b1110;  //AND
+    if ( pc_state_r == read_reg & s_bit & ( instruction_codes == 3'b000 | instruction_codes == 3'b001 ) ) begin
+      case ( opcode )
+        4'b0000: update_flags <= 4'b1110;  // AND
         4'b0001: update_flags <= 4'b1110;  // XOR
         4'b0010: update_flags <= 4'b1111;  // SUB
         4'b0100: update_flags <= 4'b1111;  // ADD
@@ -177,7 +176,6 @@ module cpu(
     cond_met = 1'b0;
     case ( cond )    // Checking Condition Codes for Jump
       4'b0000: if ( z_flag ) cond_met = 1'b1;                          // EQ
-              else cond_met = 1'b0;
       4'b0001: if ( ~z_flag ) cond_met = 1'b1;				                  // NE
       4'b0010: if ( c_flag ) cond_met = 1'b1;				                  // CS/HS
       4'b0011: if ( ~c_flag ) cond_met = 1'b1; 				                // CC/LO
@@ -282,6 +280,6 @@ module cpu(
   assign debug_port4 = operand2[0+:8];
   assign debug_port5 = data[0+:8];
   assign debug_port6 = { cond_met, 1'b0, n_flag, z_flag, 2'b0, c_flag, v_flag };
-  assign debug_port7 = pc_state_n;
+  assign debug_port7 = data[32-:8];
 
 endmodule
