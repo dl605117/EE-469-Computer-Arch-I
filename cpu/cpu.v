@@ -15,7 +15,7 @@ module cpu(
   // ***** TO DOS ***********
   // ************************************
   // Debug load and STORE
-  // CPSR
+  // CPSR - DONE??
   // PC - r15 - DONE??
   // write BACK - DONE??
   // SHIFTERS
@@ -27,6 +27,7 @@ module cpu(
   parameter write = 2'b11;
 
   reg [31:0] inst;
+  wire [31:0] CPSR;
   reg [31:0] pc_r, pc_n;
   wire [31:0] operand2;
   wire [3:0] rn_address;
@@ -45,6 +46,7 @@ module cpu(
   wire [23:0] branch_address;
   wire [31:0] r1; //post shift r1
 
+  assign CPSR = { n_flag, z_flag, c_flag, v_flag, 22'b0,5'b11111 };
   assign s_bit = inst[20];
   assign branch_address = inst[0+:24];
   assign rn_address = inst[16+:4];    // r2
