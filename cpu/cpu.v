@@ -74,8 +74,8 @@ module cpu(
   // ************************************
   // ***** Register File Writing ********
   // ************************************
-  always @(posedge clk_i) begin
-    if ( pc_state_r == write && cond_met ) begin
+  always @(posedge clk) begin
+    if ( pc_state_r == exec_mem && cond_met ) begin
       if ( ( instruction_codes == 3'b010 && s_bit ) || instruction_codes == 3'b001 ||
             instruction_codes == 3'b000 )
         do_write <= 1'b1;
