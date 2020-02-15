@@ -11,9 +11,10 @@ module register_file( input clk_i
 
   integer i;
   initial begin
-    registers[0] = 4'h7FFF;
-    registers[1] = 4'h7FFF;
-    for ( i = 2; i < 16; i++ )
+    registers[0] = 32'b01111111_11111111_11111111_11111111;
+    registers[1] = 32'b01111111_11111111_11111111_11111111;
+    registers[2] = 32'b01111111_11111111_11111111_11111111;
+    for ( i = 3; i < 16; i++ )
       registers[i] <= i;
   end
 

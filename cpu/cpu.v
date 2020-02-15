@@ -38,7 +38,7 @@ module cpu(
   wire [2:0] instruction_codes;
   reg [31:0] r1_preshift, r2;
   reg [32:0] data;
-  wire do_write;
+  reg do_write;
   wire s_bit; // also L bit for load and Store
   wire [7:0] immediate;
   wire [3:0] rotate;
@@ -52,7 +52,6 @@ module cpu(
   assign rm_address = inst[0+:4];     // r1
   assign opcode = inst[21+:4];
   assign instruction_codes = inst[25+:3];
-  assign do_write = 1'b0; // for now, will not write to register_file
   assign rotate = inst[8+:4];
   assign immediate = inst[0+:8];
 
@@ -75,13 +74,16 @@ module cpu(
   // ************************************
   // ***** Register File Writing ********
   // ************************************
-  always @(*) begin
-    do_write = 1'b0;
+  always @(posedge clk_i) begin
     if ( pc_state_r == write && cond_met ) begin
       if ( ( instruction_codes == 3'b010 && s_bit ) || instruction_codes == 3'b001 ||
             instruction_codes == 3'b000 )
-        do_write = 1'b1;
+        do_write <= 1'b1;
+      else
+        do_write <= 1'b0;
     end
+    else
+      do_write <= 1'b0;
   end
 
   // ************************************
