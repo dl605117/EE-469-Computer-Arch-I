@@ -16,14 +16,8 @@ module cpu(
   // ************************************
   // Debug load and STORE
   // PC - r15 - DONE??
-  // write BACK - DONE??
   // SHIFTERS
   // Double check Conditions work
-
-  parameter fetch = 2'b00;
-  parameter read_reg = 2'b01;
-  parameter exec_mem = 2'b10;
-  parameter write = 2'b11;
 
   reg [31:0] inst;
   wire [31:0] CPSR;
@@ -212,9 +206,9 @@ module cpu(
     if ( pc_state_n == exec_mem )
       if ( instruction_codes == 3'b010 && ~s_bit ) // also L bit for load and Store 1 = Load 0 = Store
         if( U_bit )
-          mem_addr <= rd_address + inst[11:0];
+          mem_addr <= r1_preshift + inst[11:0];
         else
-          mem_addr <= rd_address - inst[11:0];
+          mem_addr <= r1_preshift - inst[11:0];
       else
         mem_addr <= mem_addr;
     else
@@ -241,7 +235,10 @@ module cpu(
   // 2'b01 : Read Registers
   // 2'b10 : Deal with Memory
   // 2'b11 : Write Back
-
+  parameter fetch = 2'b00;
+  parameter read_reg = 2'b01;
+  parameter exec_mem = 2'b10;
+  parameter write = 2'b11;
 
   initial begin
     pc_r = 0;
@@ -281,7 +278,8 @@ module cpu(
   assign debug_port3 = r2[0+:8];
   assign debug_port4 = operand2[0+:8];
   assign debug_port5 = data[0+:8];
-  assign debug_port6 = { cond_met, 1'b0, n_flag, z_flag, 2'b0, c_flag, v_flag };
-  assign debug_port7 = data[32-:8];
+  assign debug_port6 = mem_data_o; //{ cond_met, 1'b0, n_flag, z_flag, 2'b0, c_flag, v_flag };
+  assign debug_port7 = mem_addr[0+:8];
+
 
 endmodule
