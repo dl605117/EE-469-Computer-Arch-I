@@ -30,7 +30,7 @@ module cpu(
   wire [3:0] r2_address;
   wire [3:0] opcode;
   wire [2:0] instruction_codes;
-  reg [31:0] r1_preshift, r2;
+  reg [31:0] r1_preshift;
   reg [32:0] data;
   reg do_write;
   wire s_bit; // also L bit for load and Store
@@ -38,6 +38,7 @@ module cpu(
   wire [3:0] rotate;
   wire [23:0] branch_address;
   wire [31:0] r1; //post shift r1
+  wire [31:0] r2;
 
   assign CPSR = { n_flag, z_flag, c_flag, v_flag, 22'b0, 5'b11111 };
   assign s_bit = inst[20];
@@ -87,12 +88,9 @@ module cpu(
     data = 0;
     if ( instruction_codes == 3'b010 )    // LOAD AND STORE
       if ( s_bit ) // also L bit for load and Store 1 = Load 0 = Store
-        if ( U_bit )
-          data = r2 + inst[11:0];
-        else
-          data = r2 - inst[11:0];
+        data = mem_data_o;
       else
-        data = rd_address + inst[11:0];
+        data = ALU_data;
     else if ( instruction_codes == 3'b101 && cond_met )    // Setting Link Address for Branch
       data = inst[24] ? pc_r + 4 : 0;
     else
@@ -196,19 +194,19 @@ module cpu(
   reg [31:0] mem_addr;
   wire r_not_w;
   assign r_not_w = ~(pc_state_r == write && instruction_codes == 3'b010 && ~s_bit);
-  reg [31:0] mem_data_o;
+  wire [31:0] mem_data_o;
   wire U_bit = inst[23]; // 1 = add, 0 = subtract from base
 
-  memory mem ( .clk_i(clk), .data_addr_i(mem_addr), .data_i(r2), .r_not_w_i(r_not_w), .data_o(mem_data_o) );
+  memory mem ( .clk_i(clk), .data_addr_i(mem_addr), .data_i(r1_preshift), .r_not_w_i(r_not_w), .data_o(mem_data_o) );
 
   //store data in memory
   always @(posedge clk) begin
     if ( pc_state_n == exec_mem )
       if ( instruction_codes == 3'b010 && ~s_bit ) // also L bit for load and Store 1 = Load 0 = Store
         if( U_bit )
-          mem_addr <= r1_preshift + inst[11:0];
+          mem_addr <= r2 + inst[11:0];
         else
-          mem_addr <= r1_preshift - inst[11:0];
+          mem_addr <= r2 - inst[11:0];
       else
         mem_addr <= mem_addr;
     else
