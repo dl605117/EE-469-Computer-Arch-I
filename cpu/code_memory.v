@@ -21,15 +21,15 @@ module code_memory ( input [31:0] pc_i, output [31:0] inst );
     { code_memory[64], code_memory[65], code_memory[66], code_memory[67] } <= 32'b0000_001_0010_0_0111_0011_0000_00000001; // sub r3, r7, #1  // Will not reach
   end*/
   initial begin
-    { code_memory[0], code_memory[1], code_memory[2], code_memory[3] } <= 32'b1110_000_0100_1_0010_0100_00000_00_0_0001; // add r4, r1, r2
+    { code_memory[0], code_memory[1], code_memory[2], code_memory[3] } <= 32'b1110_000_0100_1_0010_0100_00001_10_0_0001; // add r4, r1, r2
     { code_memory[4], code_memory[5], code_memory[6], code_memory[7] } <= 32'b1110_000_0000_1_0010_0100_00000_00_0_0001; // and r4, r1, r2
     { code_memory[8], code_memory[9], code_memory[10], code_memory[11] } <= 32'b1110_000_0001_1_0010_0100_00000_00_0_0001; // xor r4, r1, r2
     { code_memory[12], code_memory[13], code_memory[14], code_memory[15] } <= 32'b1110_000_0010_1_0010_0100_00000_00_0_0001; // sub r4, r1, r2
     { code_memory[16], code_memory[17], code_memory[18], code_memory[19] } <= 32'b1110_000_0100_1_0110_0100_00000_00_0_0001; // add r4, r1, r6
     { code_memory[20], code_memory[21], code_memory[22], code_memory[23] } <= 32'b1110_000_0100_1_0101_0100_00000_00_0_0011; // add r4, r3, r5
     { code_memory[24], code_memory[25], code_memory[26], code_memory[27] } <= 32'b1110_000_0100_1_0011_0101_00000_00_0_0100; // add r5, r4, r3 // 0x18
-    { code_memory[28], code_memory[29], code_memory[30], code_memory[31] } <= 32'b1110_010_11000_0000_0101_000000000000; // str r5 0x0 (offset from r0)
-    { code_memory[32], code_memory[33], code_memory[34], code_memory[35] } <= 32'b1110_010_11001_0000_0110_000000000000; // ldr r6 0x0 (offset from r0)
+    { code_memory[28], code_memory[29], code_memory[30], code_memory[31] } <= 32'b1110_010_11000_0000_0101_000000000001; // str r5 0x0 (offset from r0)
+    { code_memory[32], code_memory[33], code_memory[34], code_memory[35] } <= 32'b1110_010_11001_0000_0110_000000000001; // ldr r6 0x0 (offset from r0)
     { code_memory[36], code_memory[37], code_memory[38], code_memory[39] } <= 32'b1110_000_1101_1_0110_1000_00000_00_0_0000; // add r8 r0 r6
     { code_memory[40], code_memory[41], code_memory[42], code_memory[43] } <= 32'b1110_000_1110_1_0010_0100_00000_00_0_0001; // bit clear r4, r1, r2
     { code_memory[44], code_memory[45], code_memory[46], code_memory[47] } <= 32'b0000_000_1111_1_0010_0100_00000_00_0_0001; // mov not r4, r1, r2

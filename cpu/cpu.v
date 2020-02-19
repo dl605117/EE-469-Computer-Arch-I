@@ -272,10 +272,10 @@ module cpu(
 
   // These are how you communicate back to the serial port debugger.
   assign debug_port1 = pc_r[0+:8];
-  assign debug_port2 = r1[0+:8];
+  assign debug_port2 = r1_preshift[31:24];
   assign debug_port3 = r2[0+:8];
   assign debug_port4 = operand2[0+:8];
-  assign debug_port5 = data[0+:8];
+  assign debug_port5 = data[31:24];
   assign debug_port6 = mem_data_o; //{ cond_met, 1'b0, n_flag, z_flag, 2'b0, c_flag, v_flag };
   assign debug_port7 = mem_addr[0+:8];
 
