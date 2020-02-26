@@ -9,7 +9,7 @@ module execute (
   , output [31:0] ALU_data_o
   , output stall_o
   , output valid_o
-  , output flush_ofe
+  , output flush_o
   , output branch
 );
   /////////// Init statements /////////////
@@ -23,6 +23,7 @@ module execute (
   reg [3:0] update_flags;
   reg flush_o;
   wire branch;
+  wire [31:0] CPSR;
 
   /////////// Assign statements ///////////
   assign opcode = inst_i[21+:4];
@@ -32,6 +33,7 @@ module execute (
   assign stall_o = stall_i; // NEEDS TO BE FIXED
   assign s_bit = inst[20];
   assign inst_o = inst_i;
+  assign CPSR = { n_flag, z_flag, c_flag, v_flag, 22'b0, 5'b11111 };
 
   //////////// Setting Valid ////////////
   always @(posedge clk_i)

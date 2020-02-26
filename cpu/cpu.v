@@ -37,6 +37,7 @@ module cpu(
   wire [31:0] r1; //post shift r1
   wire [31:0] r2;
 
+
   assign CPSR = { n_flag, z_flag, c_flag, v_flag, 22'b0, 5'b11111 };
   assign s_bit = inst[20];
   assign branch_address = inst[0+:24];
@@ -47,143 +48,22 @@ module cpu(
   assign rotate = inst[8+:4];
   assign immediate = inst[0+:8];
 
-  code_memory cm ( pc_r, inst );
-  register_file rf ( clk, r1_address, r2_address, do_write, rd_address, data[0+:32], pc_r, r1_preshift, r2 );
-  rotate rot ( rotate, immediate, operand2 );
+  wire branch;
+  wire [31:0] inst;
+
   shifter shifting (inst, r1_preshift, r1);
+  register_file rf (  .clk_i(clk)
+                    , .r1_addr_i(r1_address)
+                    , .r2_addr_i(r2_address)
+                    , .wr_en_i(wb_en_i)
+                    , .wr_addr_i(wb_addr_i)
+                    , .data_i(wb_data_i)
+                    , .pc(pc_i)
+                    , .r1_o(r1_o)
+                    , .r2_o(r2_o)
+                    );
 
-  // ************************************
-  // ***** Register File Addressing *****
-  // ************************************
-  assign r2_address = rn_address;
-  always @(*) begin
-    if ( instruction_codes == 3'b010 ) // LOAD and STORE
-      r1_address = rd_address;
-    else
-      r1_address = rm_address;
-  end
-
-  // ************************************
-  // ***** Register File Writing ********
-  // ************************************
-  always @(posedge clk) begin
-    if ( pc_state_r == exec_mem && cond_met ) begin
-      if ( ( instruction_codes == 3'b010 && s_bit ) || instruction_codes == 3'b001 ||
-            instruction_codes == 3'b000 )
-        do_write <= 1'b1;
-      else
-        do_write <= 1'b0;
-    end
-    else
-      do_write <= 1'b0;
-  end
-
-  // ************************************
-  // ***** NORMAL OPERATIONS & BL *******
-  // ************************************
-  always @(*) begin
-    data = 0;
-    if ( instruction_codes == 3'b010 )    // LOAD AND STORE
-      if ( s_bit ) // also L bit for load and Store 1 = Load 0 = Store
-        data = mem_data_o;
-      else
-        data = ALU_data;
-    else if ( instruction_codes == 3'b101 && cond_met )    // Setting Link Address for Branch
-      data = inst[24] ? pc_r + 4 : 0;
-    else
-      data = ALU_data;
-  end
-
-  wire [32:0] ALU_data;
-  ALU alu (.instruction_codes(instruction_codes),.opcode(opcode), .r2(r2), .r1(r1), .operand2(operand2), .data(ALU_data));
-  // ************************************
-  // ************ FLAGS *****************
-  // ************************************
-
-  wire n_flag, v_flag, z_flag, c_flag;
-  reg [3:0] update_flags;
-
-  // UPDATING FLAGS
-  always @(*) begin
-    if ( update_flags[3] )
-      n_flag = data[31];     // negative flag
-    else
-    n_flag = n_flag;
-
-    if ( update_flags[2] )
-      z_flag = (data == 0);     // zero flag
-    else
-      z_flag = z_flag;
-
-    if ( update_flags[1] )
-      c_flag = data[32];     // carry flag
-    else
-      c_flag = c_flag;
-
-    if ( update_flags[0] )   // overflow flag
-      if(instruction_codes == 3'b001)
-        v_flag = (opcode == 4'b0100) ? operand2[31] & r2[31] && (!data[31]) || (!operand2[31] & !r2[31] && data[31])
-              : !operand2[31] & r2[31] && (!data[31]) || (operand2[31] & !r2[31] && data[31]);
-      else
-        v_flag = (opcode == 4'b0100) ? r1[31] & r2[31] && (!data[31]) || (!r1[31] & !r2[31] && data[31])
-              : r1[31] & !r2[31] && (!data[31]) || (!r1[31] & r2[31] && data[31]);
-    else
-      v_flag = v_flag;
-  end
-
-  //4'bxxxx : {n_flag, z_flag, c_flag, v_flag}
-  // SETTING UPDATE FLAGS
-  always @( posedge clk ) begin
-    if ( pc_state_r == read_reg & s_bit & ( instruction_codes == 3'b000 | instruction_codes == 3'b001 ) ) begin
-      case ( opcode )
-        4'b0000: update_flags <= 4'b1110;  // AND
-        4'b0001: update_flags <= 4'b1110;  // XOR
-        4'b0010: update_flags <= 4'b1111;  // SUB
-        4'b0100: update_flags <= 4'b1111;  // ADD
-        4'b1000: update_flags <= 4'b1110;  // TEST
-        4'b1001: update_flags <= 4'b1110;  // TESTQ
-        4'b1010: update_flags <= 4'b1111;  // COMPARE
-        4'b1100: update_flags <= 4'b1110;  // OR
-        4'b1101: update_flags <= 4'b1110;  // MOV
-        4'b1110: update_flags <= 4'b0000;  // BIT CLEAR
-        4'b1111: update_flags <= 4'b1110;  // MOVE NOT
-        default: update_flags <= 4'b0000;  // EVERYTHING ELSE
-      endcase
-    end
-    else begin
-      update_flags <= 4'b0000;    // RESETTING
-    end
-  end
-
-  // ************************************
-  // ******* CHECKING CONDITIONS ********
-  // ************************************
-  // cond code
-  wire [3:0] cond;
-  assign cond = inst[28+:4];
-  wire cond_met;
-
-  always @(*) begin
-    cond_met = 1'b0;
-    case ( cond )    // Checking Condition Codes for Jump
-      4'b0000: if ( z_flag ) cond_met = 1'b1;                          // EQ
-      4'b0001: if ( ~z_flag ) cond_met = 1'b1;				                  // NE
-      4'b0010: if ( c_flag ) cond_met = 1'b1;				                  // CS/HS
-      4'b0011: if ( ~c_flag ) cond_met = 1'b1; 				                // CC/LO
-      4'b0100: if ( n_flag ) cond_met = 1'b1; 				                  // MI
-      4'b0101: if ( ~n_flag ) cond_met = 1'b1;				                  // PL
-      4'b0110: if ( v_flag ) cond_met = 1'b1;				                  // VS
-      4'b0111: if ( ~v_flag ) cond_met = 1'b1; 				                // VC
-      4'b1000: if ( c_flag && ~z_flag ) cond_met = 1'b1; 			        // HI
-      4'b1001: if ( ~c_flag && z_flag ) cond_met = 1'b1;			          // LS
-      4'b1010: if ( n_flag == v_flag ) cond_met = 1'b1; 		            // GE
-      4'b1011: if ( n_flag != v_flag ) cond_met = 1'b1;		            // LT
-      4'b1100: if ( ~z_flag && (n_flag == v_flag) ) cond_met = 1'b1; 	// GT
-      4'b1101: if ( z_flag && (n_flag != v_flag) ) cond_met = 1'b1;	  // LE
-      4'b1110: cond_met = 1'b1;                                        // ALWAYS
-      default: cond_met = 0; 				                                  // Otherwise
-    endcase
-  end
+  fetch fetch_module ( .clk_i(clk), .branch(branch), .inst_o(inst) );
 
   // ************************************
   // ******** LOADING & STORING *********
@@ -222,47 +102,6 @@ module cpu(
       rd_address = inst[12+:4];
   end
 
-  // ************************************
-  // **** BRANCHING and INCREMENT *******
-  // ************************************
-  reg [1:0] pc_state_n, pc_state_r;
-  // 2'b00 : Fetch Instructions
-  // 2'b01 : Read Registers
-  // 2'b10 : Deal with Memory
-  // 2'b11 : Write Back
-  parameter fetch = 2'b00;
-  parameter read_reg = 2'b01;
-  parameter exec_mem = 2'b10;
-  parameter write = 2'b11;
-
-  initial begin
-    pc_r = 0;
-    pc_state_r = write;
-  end
-
-  always @(*) begin
-    if ( pc_state_r == 4 )
-      pc_state_n = 0;
-    else
-      pc_state_n = pc_state_r + 1;
-  end
-
-  always @(*) begin
-    if ( pc_state_r == write )
-      if ( instruction_codes == 3'b101 && cond_met )   // Does Branch with Conditions
-        pc_n = pc_r + 8 + { {6{branch_address[23]}}, branch_address, 2'b0 };
-      else
-        pc_n = pc_r >= 64 ? 0 : pc_r + 4;
-    else if ( pc_state_r == exec_mem && rd_address == 4'b1111 )
-      pc_n = data;
-    else
-      pc_n = pc_r;
-  end
-
-  always @(posedge clk) begin  // CHANGE 4 STAGE CLK CYCLE 1. FETCH INST 2. READ REGISTERS/COMPUTE 3. MEM 4. WRITE
-    pc_state_r <= pc_state_n;
-    pc_r <= pc_n;
-  end
 
   // Controls the LED on the board.
   assign led = 1'b0;

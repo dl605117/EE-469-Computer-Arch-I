@@ -1,5 +1,5 @@
 module decode_reg_r (
-    input clk
+    input clk_i
   , input pc_i
   , input [31:0] inst_i
   , input valid_i
@@ -19,7 +19,7 @@ module decode_reg_r (
   wire [3:0] r2_address;
 
   assign rn_address = inst_i[16+:4];
-  assign rm_address = inst_i[0+:4];     
+  assign rm_address = inst_i[0+:4];
 
   // ************************************
   // ***** Register File Addressing *****
@@ -32,22 +32,14 @@ module decode_reg_r (
       r1_address = rm_address;
   end
 
-  register_file rf (  .clk_i(clk)
-                    , .r1_addr_i(r1_address)
-                    , .r2_addr_i(r2_address)
-                    , .wr_en_i(wb_en_i)
-                    , .wr_addr_i(wb_addr_i)
-                    , .data_i(wb_data_i)
-                    , .pc(pc_i)
-                    , .r1_o(r1_o)
-                    , .r2_o(r2_o)
-                    );
+  
 
-  always @(posedge clk) begin
+  always @(posedge clk_i) begin
     inst_o <= inst_i;
     if(flush)
       valid_o <= 0;
     else
       valid_o <= valid_i;
   end
+
 endmodule
