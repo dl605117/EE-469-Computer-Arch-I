@@ -1,4 +1,8 @@
-module code_memory ( input [31:0] pc_i, output [31:0] inst );
+module code_memory (
+    input clk
+  , input [31:0] pc_i
+  , output [31:0] inst
+);
   wire [7:0] code_memory [0:67];
 
   /*initial begin
@@ -40,5 +44,6 @@ module code_memory ( input [31:0] pc_i, output [31:0] inst );
     { code_memory[64], code_memory[65], code_memory[66], code_memory[67] } <= 32'b0000_001_0010_0_0111_0011_0000_00000001; // sub r3, r7, #1  // Will not reach
   end
 
-  assign inst = { code_memory[pc_i], code_memory[pc_i+1], code_memory[pc_i+2], code_memory[pc_i+3] };
+  always @(posedge clk)
+    inst <= { code_memory[pc_i], code_memory[pc_i+1], code_memory[pc_i+2], code_memory[pc_i+3] };
 endmodule
