@@ -14,10 +14,7 @@ module cpu(
   // ************************************
   // ***** TO DOS ***********
   // ************************************
-  // Debug load and STORE
-  // PC - r15 - DONE??
-  // SHIFTERS
-  // Double check Conditions work
+  // stall(find cases for other stall)
 
   reg [31:0] inst;
   wire [31:0] CPSR;

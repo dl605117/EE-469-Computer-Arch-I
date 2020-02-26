@@ -1,6 +1,7 @@
 module mem (
    input clk
   , input [31:0] ALU_data_i
+  , input [31:0] store_data_i
   , input [31:0] inst_i
   , input valid_i
   , output [31:0] ALU_data_o
@@ -16,7 +17,7 @@ module mem (
 
   memory mem (  .clk_i(clk)
               , .data_addr_i(mem_addr)
-              , .data_i(ALU_data_i)
+              , .data_i(store_data_i)
               , .r_not_w_i(r_not_w)
               , .valid_i(valid_i)
               , .data_o(mem_data_o)

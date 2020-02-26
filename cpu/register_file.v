@@ -5,7 +5,7 @@ module register_file( input clk_i
       , input [3:0] wr_addr_i
       , input [31:0] data_i
       , input [31:0] pc
-      , output reg [31:0] r1_o, r2_o );
+      , output [31:0] r1_o, r2_o );
 
   reg [31:0] registers [15:0];
 
