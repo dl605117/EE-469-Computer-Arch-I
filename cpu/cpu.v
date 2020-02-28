@@ -52,16 +52,6 @@ module cpu(
   wire [31:0] inst;
 
   shifter shifting (inst, r1_preshift, r1);
-  register_file rf (  .clk_i(clk)
-                    , .r1_addr_i(r1_address)
-                    , .r2_addr_i(r2_address)
-                    , .wr_en_i(wb_en_i)
-                    , .wr_addr_i(wb_addr_i)
-                    , .data_i(wb_data_i)
-                    , .pc(pc_i)
-                    , .r1_o(r1_o)
-                    , .r2_o(r2_o)
-                    );
 
   fetch fetch_module ( .clk_i(clk), .branch(branch), .inst_o(inst) );
 
