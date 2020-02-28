@@ -9,8 +9,12 @@ module write_back (
   , output wr_en_o
   , output [31:0] wb_data_o
   , output [3:0] wb_addr_o
+  , output pc_wb_o
+  , flush_o;
 )
   assign wb_addr_o = wb_addr_i;
   assign wr_en_o = valid_i & wb_i; ///check
   assign wb_data_o = load_i ? mem_data_i : ALU_data_i;
+  assign pc_wb_o = wb_addr_i == 4'b1111;
+  assign flush_o = pc_wb_o;
 endmodule
