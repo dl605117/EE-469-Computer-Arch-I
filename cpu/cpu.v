@@ -48,12 +48,57 @@ module cpu(
   assign rotate = inst[8+:4];
   assign immediate = inst[0+:8];
 
-  wire branch;
+  wire branch, pc_wb;
   wire [31:0] inst;
+  wire [31:0] exec_data;
 
-  shifter shifting (inst, r1_preshift, r1);
+  fetch fetch_module (
+    .clk_i( clk )
+    , .branch_i( branch )
+    , .pc_wb_i( pc_wb )
+    , .data_i( exec_data )
+    , .inst_o( inst )
+    );
 
-  fetch fetch_module ( .clk_i(clk), .branch(branch), .inst_o(inst) );
+  wire inst_fetch_to_decode;
+  wire valid_fetch_to_decode;
+  wire wb_data_fetch_to_decode;
+  wire wb_addr_fetch_to_decode;
+  wire wb_en_fetch_to_decode;
+  wire valid_fetch_to_decode;
+  wire r1_fetch_to_decode;
+  wire r2_fetch_to_decode;
+
+  decode_reg_r register_module (
+    .clk_i( clk )
+    , .pc_i( pc_r )
+    , .inst_i( inst_fetch_to_decode )
+    , .valid_i( valid_fetch_to_decode )
+    , .flush_i( flush_fetch_to_decode )
+    , .wb_data_i( wb_data_fetch_to_decode )
+    , .wb_addr_i( wb_addr_fetch_to_decode )
+    , .wb_en_i( wb_en_fetch_to_decode )
+    , .valid_o( valid_fetch_to_decode )
+    , .r1_o( r1_fetch_to_decode )
+    , .r2_o( r2_fetch_to_decode )
+    , .inst_o( inst_fetch_to_decode )
+    );
+
+  execute execute_module (
+    input clk_i
+    , input [31:0] r1_i
+    , input [31:0] r2_i
+    , input [31:0] inst_i
+    , input stall_i
+    , input valid_i
+    , output [31:0] inst_o
+    , output [31:0] ALU_data_o
+    , output stall_o
+    , output valid_o
+    , output flush_o
+    , output branch
+  );
+
 
   // ************************************
   // ******** LOADING & STORING *********
