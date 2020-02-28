@@ -1,4 +1,4 @@
-module shifter ( input [31:0] inst_i
+module shifter ( input [6:0] inst_i
   , input signed [31:0] r1_i
   , output [31:0] r1_shift_o
   );
@@ -7,8 +7,8 @@ module shifter ( input [31:0] inst_i
   wire [2:0] shift_type;
   wire signed [31:0] r1_shift_tmp;
 
-  assign shift_imm = inst_i[11:7];
-  assign shift_type = inst_i[6:5];
+  assign shift_imm = inst_i[6:2];
+  assign shift_type = inst_i[1:0];
 
   always @(*) begin
     if (shift_type == 0)  //logical shift left

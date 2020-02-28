@@ -11,6 +11,9 @@ module decode_reg_r (
   , output [31:0] r1_o
   , output [31:0] r2_o
   , output [31:0] inst_o
+  , output [3:0] r1_addr_o
+  , output [3:0] r2_addr_o
+  , output [3:0] rd_addr_o
 )
   wire [3:0] rn_address;
   wire [3:0] rm_address;
@@ -20,6 +23,7 @@ module decode_reg_r (
 
   assign rn_address = inst_i[16+:4];
   assign rm_address = inst_i[0+:4];
+  assign rd_address = inst_i[12+:4];
 
   // ************************************
   // ***** Register File Addressing *****
@@ -31,6 +35,7 @@ module decode_reg_r (
     else
       r1_address = rm_address;
   end
+
 
   register_file rf (  .clk_i(clk)
                     , .r1_addr_i(r1_address)
@@ -51,4 +56,9 @@ module decode_reg_r (
       valid_o <= valid_i;
   end
 
+  always @(posedge clk_i) begin
+    r1_addr_o <= r1_address;
+    r2_addr_o <= r2_address;
+    rd_addr_o <= rd_address;
+  end
 endmodule

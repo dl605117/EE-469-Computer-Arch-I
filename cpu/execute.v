@@ -2,7 +2,13 @@ module execute (
     input clk_i
   , input [31:0] r1_i
   , input [31:0] r2_i
+  , input [3:0] r1_addr_i
+  , input [3:0] r2_addr_i
+  , input [3:0] rd_addr_i
   , input [31:0] inst_i
+  , input [31:0] wb_data_i
+  , input [3:0] wb_addr_i
+  , input wb_en_i
   , input stall_i
   , input valid_i
   , output [31:0] inst_o
@@ -11,6 +17,7 @@ module execute (
   , output valid_o
   , output flush_o
   , output branch
+  , output [3:0] rd_addr_o
 );
   /////////// Init statements /////////////
   wire [3:0] opcode;
@@ -24,6 +31,8 @@ module execute (
   reg flush_o;
   wire branch;
   wire [31:0] CPSR;
+  wire [31:0] r1;
+  wire [31:0] r2;
 
   /////////// Assign statements ///////////
   assign opcode = inst_i[21+:4];
@@ -32,8 +41,12 @@ module execute (
   assign rotate = inst[8+:4];
   assign stall_o = stall_i; // NEEDS TO BE FIXED
   assign s_bit = inst[20];
-  assign inst_o = inst_i;
   assign CPSR = { n_flag, z_flag, c_flag, v_flag, 22'b0, 5'b11111 };
+
+  //////////// pipeline registers ////////////
+  always @(posedge clk_i) begin
+    inst_o <= inst_i;
+  end
 
   //////////// Setting Valid ////////////
   always @(posedge clk_i)
@@ -53,7 +66,7 @@ module execute (
 
   //////////////// Modules ////////////////
   rotate rot ( rotate, immediate, operand2 );
-  ALU alu (.instruction_codes(instruction_codes), .opcode(opcode), .a(r2_i), .b(r1_i), .data(ALU_data_o));
+  ALU alu (.instruction_codes(instruction_codes), .opcode(opcode), .a(r2_ALU), .b(r1_ALU), .data(ALU_data_o));
 
   // ************************************
   // ************ FLAGS *****************
@@ -149,4 +162,34 @@ module execute (
     else
       branch = 1'b0;
 
+  // ************************************
+  // *********** Data Hazard ************
+  // ************************************
+  always @(*) begin
+    if (wb_addr_i == r1_addr_i && wb_en_i)
+      r1 = wb_data_i;
+    else if (rd_addr_o == r1_addr_i && valid_o && do_write_o)
+      r1 = ALU_data_o;
+    else
+      r1 = r1_i;
+    if (wb_addr_i == r2_addr_i && wb_en_i)
+      r2 = wb_data_i;
+    else if (rd_addr_o == r2_addr_i && valid_o && do_write_o)
+      r2 = ALU_data_o;
+    else
+      r2 = r2_i;
+  end
+
+  // ************************************
+  // ********* r1(rm) selection *********
+  // ************************************
+  wire [31:0] r1_shift;
+  wire [31:0] r1_ALU;
+  wire [31:0] r2_ALU;
+  shifter shifting (  .inst_i(inst_i[11:5])
+                    , .r1_i(r1)
+                    , .r1_shift_o(r1_shift)
+                    );
+  assign r1_ALU =    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  assign r2_ALU = r2;
 endmodule
