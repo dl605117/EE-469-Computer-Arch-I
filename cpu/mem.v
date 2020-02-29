@@ -29,20 +29,9 @@ module mem (
   assign U_bit = inst[23]; // 1 = add, 0 = subtract from base
   assign flush_o = flush_i;
 
-  ////////// memory addr ///////////////
-  always @(*) begin
-    mem_addr = 0;
-    if ( instruction_codes == 3'b010 && ~s_bit ) begin // also L bit for load and Store 1 = Load 0 = Store
-      if( U_bit )
-        mem_addr <= r2 + inst[11:0];
-      else
-        mem_addr <= r2 - inst[11:0];
-    end
-  end
-
   memory mem (  .clk_i(clk)
               , .reset_i(reset_i)
-              , .data_addr_i(mem_addr)
+              , .data_addr_i(ALU_data_i)
               , .data_i(store_data_i)
               , .r_not_w_i(r_not_w)
               , .valid_i(valid_i)
@@ -60,7 +49,7 @@ module mem (
       ALU_data_o <= ALU_data_i;
       wb_addr_o <= wb_addr;
       valid_o <= valid_i
-      load_o <= r_not_w;
+      load_o <= (instruction_codes == 3'b010 && s_bit);
     end
   end
 endmodule

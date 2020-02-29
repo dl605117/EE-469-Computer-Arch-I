@@ -22,6 +22,7 @@ module execute (
   , output branch_o
   , output [3:0] rd_addr_o
   , output do_write_o
+  , output rd_data_o
 );
   /////////// Init statements /////////////
   wire [3:0] opcode;
@@ -37,6 +38,7 @@ module execute (
   wire [3:0] cond;
   reg [31:0] ALU_data;
   wire do_write;
+  wire ALU_opcode;
 
   /////////// Assign statements ///////////
   assign opcode = inst_i[21+:4];
@@ -46,6 +48,7 @@ module execute (
   assign stall_o = stall_i; // NEEDS TO BE FIXED
   assign s_bit = inst_i[20];
   assign cond = inst_i[28+:4];
+  assign ALU_opcode = instruction_codes == 3'b010 ? U_bit ? 4'b0100 : 4'b0010 : opcode;
 
   //////////// pipeline registers ////////////
   always @(posedge clk_i) begin
@@ -54,17 +57,20 @@ module execute (
       ALU_data_o <= 0;
       do_write_o <= 0;
       rd_addr_o <= 0;
+      rd_data_o <= 0;
     end else begin
       if(stall_i) begin
         inst_o <= inst_o;
         ALU_data_o <= ALU_data_o;
         do_write_o <= do_write_o;
         rd_addr_o <= rd_addr_o;
+        rd_data_o <= rd_data_o;
       end else begin
         inst_o <= inst_i;
         ALU_data_o <= ALU_data;
         do_write_o <= do_write;
         rd_addr_o <= rd_addr_i;
+        rd_data_o <= r1_i;
       end
     end
   end
@@ -102,7 +108,7 @@ module execute (
   ALU ALU_module (
       .instruction_codes( inst_i )
     , .reset_i(reset_i)
-    , .opcode( opcode )
+    , .opcode( ALU_opcode )
     , .a( r2_ALU )
     , .b( r1_ALU )
     , .cond( cond )
@@ -130,7 +136,7 @@ module execute (
       r1 = wb_data_i;
     else if (rd_addr_o == r1_addr_i && valid_o && do_write_o)
       r1 = ALU_data_o;
-    else if (instruction_codes == 3'b010)
+    else
       r1 = r1_i;
     if (wb_addr_i == r2_addr_i && wb_en_i)
       r2 = wb_data_i;
@@ -151,7 +157,10 @@ module execute (
                     , .r1_i(r1)
                     , .r1_shift_o(r1_shift)
                     );
-  assign r1_ALU = instruction_codes == 3'b000 ? r1_shift : operand2;
+                    if (instruction_codes == 3'b010 && ~s_bit)
+                     r1 =
+  assign r1_ALU = (instruction_codes == 3'b010 && ~s_bit) ? {20'b0, inst_i[11:0]} :
+                  instruction_codes == 3'b000 ? r1_shift : operand2;
   assign r2_ALU = r2;
 
   // ************************************
@@ -188,7 +197,5 @@ module execute (
       stall = 0;
   end
   assign stall_o = stall;
-
-  ///////////// load and store ///////////
 
 endmodule
