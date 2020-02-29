@@ -72,9 +72,9 @@ module execute (
   //////////// Setting Valid ////////////
   always @(posedge clk_i) begin
     if(reset_i) begin
-      valid_o <= 1'b1;
+      valid_o <= 1'b0;
     end else begin
-      if(~stall_i) begin
+      if(~stall) begin
         if ( flush_i || ( cond_met && branch_o ) )
           valid_o <= 1'b0;
         else
@@ -87,7 +87,7 @@ module execute (
   /////////// Setting Flush ////////////
   always @(posedge clk_i) begin
     if (reset_i) begin
-      flusH_o <= 0;
+      flush_o <= 0;
     end else begin
       if ( flush_i || ( cond_met && branch_o ) )
         flush_o <= 1'b1;
@@ -130,7 +130,7 @@ module execute (
       r1 = wb_data_i;
     else if (rd_addr_o == r1_addr_i && valid_o && do_write_o)
       r1 = ALU_data_o;
-    else
+    else if (instruction_codes == 3'b010)
       r1 = r1_i;
     if (wb_addr_i == r2_addr_i && wb_en_i)
       r2 = wb_data_i;
@@ -172,6 +172,22 @@ module execute (
   // ************************************
   // ************** Stalling ************
   // ************************************
-  assign stall_o = stall_i;
+  wire stall;
+  wire [3:0] instruction_codes_old;
+  assign instruction_codes_old = inst_o[25+:3];
+  always @(*) begin
+    if (instruction_codes_old == 3'b010) begin
+      if(instruction_codes == 3'b000) begin
+        stall = (r1_addr_i == rd_addr_o || r2_addr_i == rd_addr_o );
+      end else if (instruction_codes == 3'b001) begin
+        stall = r2_addr_i == rd_addr_o;
+      end else
+        stall = 0;
+    end else
+      stall = 0;
+  end
+  assign stall_o = stall;
+
+  ///////////// load and store ///////////
 
 endmodule

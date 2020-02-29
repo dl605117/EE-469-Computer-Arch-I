@@ -51,9 +51,16 @@ module mem (
 
   ////////// pipeline registers ///////////
   always @(posedge clk) begin
-    ALU_data_o <= ALU_data_i;
-    wb_addr_o <= wb_addr;
-    valid_o <= valid_i
-    load_o <= r_not_w;
+    if(reset_i) begin
+      ALU_data_o <= 0;
+      wb_addr_o <= 0;
+      valid_o <= 0;
+      load_o <= 0;
+    end else begin
+      ALU_data_o <= ALU_data_i;
+      wb_addr_o <= wb_addr;
+      valid_o <= valid_i
+      load_o <= r_not_w;
+    end
   end
 endmodule
