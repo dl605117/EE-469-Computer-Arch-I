@@ -1,5 +1,6 @@
 module execute (
     input clk_i
+  , input reset_i
   , input [31:0] r1_i
   , input [31:0] r2_i
   , input [3:0] r1_addr_i
@@ -34,6 +35,8 @@ module execute (
   wire [31:0] r1;
   wire [31:0] r2;
   wire [3:0] cond;
+  reg [31:0] ALU_data;
+  wire do_write
 
   /////////// Assign statements ///////////
   assign opcode = inst_i[21+:4];
@@ -46,32 +49,65 @@ module execute (
 
   //////////// pipeline registers ////////////
   always @(posedge clk_i) begin
-    inst_o <= inst_i;
+    if(reset_i) begin
+      inst_o <= 0;
+      ALU_data_o <= 0;
+      do_write_o <= 0;
+      rd_addr_o <= 0;
+    end else begin
+      if(stall_i) begin
+        inst_o <= inst_o;
+        ALU_data_o <= ALU_data_o;
+        do_write_o <= do_write_o;
+        rd_addr_o <= rd_addr_o;
+      end else begin
+        inst_o <= inst_i;
+        ALU_data_o <= ALU_data;
+        do_write_o <= do_write;
+        rd_addr_o <= rd_addr_i;
+      end
+    end
   end
 
   //////////// Setting Valid ////////////
-  always @(posedge clk_i)
-    if ( flush_i || ( cond_met && branch_o ) )
-      valid_o <= 1'b0;
-    else
-      valid_o <= valid_i;
+  always @(posedge clk_i) begin
+    if(reset_i) begin
+      valid_o <= 1'b1;
+    end else begin
+      if(~stall_i) begin
+        if ( flush_i || ( cond_met && branch_o ) )
+          valid_o <= 1'b0;
+        else
+          valid_o <= valid_i;
+      end else
+        valid_o <= valid_o;
+    end
+  end
 
   /////////// Setting Flush ////////////
-  always @(posedge clk_i)
-    if ( flush_i || ( cond_met && branch_o ) )
-      flush_o <= 1'b1;
-    else
-      flush_o <= flush_i;
+  always @(posedge clk_i) begin
+    if (reset_i) begin
+      flusH_o <= 0;
+    end else begin
+      if ( flush_i || ( cond_met && branch_o ) )
+        flush_o <= 1'b1;
+      else if (flush_o == 1'b1)
+        flush_o <= 1'b0;
+      else
+        flush_o <= flush_i;
+    end
+  end
 
   //////////////// ALU ////////////////
   ALU ALU_module (
-    .instruction_codes( inst_i )
+      .instruction_codes( inst_i )
+    , .reset_i(reset_i)
     , .opcode( opcode )
     , .a( r2_ALU )
     , .b( r1_ALU )
     , .cond( cond )
     , .s_bit( s_bit )
-    , .data( ALU_data_o )
+    , .data( ALU_data )
     , .CPSR( CPSR_o )
     , .cond_met( cond_met )
   );
@@ -79,11 +115,12 @@ module execute (
   // ************************************
   // ************ BRANCHING *************
   // ************************************
-  always @(*)
+  always @(*) begin
     if ( cond_met && instruction_codes == 3'b101 )
       branch_o = 1'b1;
     else
       branch_o = 1'b0;
+  end
 
   // ************************************
   // *********** Data Hazard ************
@@ -123,13 +160,18 @@ module execute (
   always @(*) begin
     if ( cond_met )
       if ( ( instruction_codes == 3'b000 || instruction_codes == 3'b001 ) && s_bit ) // if write to registers and normal op
-        do_write_o = 1'b1;
+        do_write = 1'b1;
       else if ( instruction_codes == 3'b010 && s_bit = 1'b0 ) // writes only if Storing to Mem and not LOAD
-        do_write_o = 1'b1;
+        do_write = 1'b1;
       else
-        do_write_o = 1'b0;
+        do_write = 1'b0;
     else
-      do_write_o = 1'b0;
+      do_write = 1'b0;
   end
+
+  // ************************************
+  // ************** Stalling ************
+  // ************************************
+  assign stall_o = stall_i;
 
 endmodule

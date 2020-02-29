@@ -1,5 +1,6 @@
 module ALU (
-  input [2:0] instruction_codes
+    input [2:0] instruction_codes
+  , input reset_i
   , input [3:0] opcode
   , input [31:0] a, b
   , input [3:0] cond
@@ -36,55 +37,62 @@ assign b_temp = ~b;
   // a = rn or r2
   // b = rm (muxed in as rm or operand2) or r1
 
-  wire n_flag, v_flag, z_flag, c_flag;
-  reg [3:0] update_flags;
+  reg n_flag, v_flag, z_flag, c_flag;
+  wire [3:0] update_flags;
   assign CPSR = { n_flag, z_flag, c_flag, v_flag, 22'b0, 5'b11111 };
 
   // UPDATING FLAGS
-  always @(*) begin
-    if ( update_flags[3] )
-      n_flag = data[31];     // negative flag
-    else
-    n_flag = n_flag;
+  always @(posedge clk_i) begin
+    if (reset_i) begin
+      n_flag <= 0;
+      z_flag <= 0;
+      c_flag <= 0;
+      v_flag <= 0;
+    end else begin
+      if ( update_flags[3] )
+        n_flag <= data[31];     // negative flag
+      else
+        n_flag <= n_flag;
 
-    if ( update_flags[2] )
-      z_flag = (data == 0);     // zero flag
-    else
-      z_flag = z_flag;
+      if ( update_flags[2] )
+        z_flag <= (data == 0);     // zero flag
+      else
+        z_flag <= z_flag;
 
-    if ( update_flags[1] )
-      c_flag = data[32];     // carry flag
-    else
-      c_flag = c_flag;
+      if ( update_flags[1] )
+        c_flag <= data[32];     // carry flag
+      else
+        c_flag <= c_flag;
 
-    if ( update_flags[0] )   // overflow flag
-        v_flag = (opcode == 4'b0100) ? b[31] & a[31] && (!data[31]) || (!b[31] & !a[31] && data[31])
-              : (b[31] & !a[31] && data[31]) || (b_temp[31] & a[31] && !data[31]);
-    else
-      v_flag = v_flag;
+      if ( update_flags[0] )   // overflow flag
+          v_flag <= (opcode == 4'b0100) ? b[31] & a[31] && (!data[31]) || (!b[31] & !a[31] && data[31])
+                : (b[31] & !a[31] && data[31]) || (b_temp[31] & a[31] && !data[31]);
+      else
+        v_flag <= v_flag;
+    end
   end
 
   //4'bxxxx : {n_flag, z_flag, c_flag, v_flag}
   // SETTING UPDATE FLAGS
-  always @( posedge clk ) begin
+  always @(*) begin
     if ( s_bit & ( instruction_codes == 3'b000 | instruction_codes == 3'b001 ) ) begin
       case ( opcode )
-        4'b0000: update_flags <= 4'b1110;  // AND
-        4'b0001: update_flags <= 4'b1110;  // XOR
-        4'b0010: update_flags <= 4'b1111;  // SUB
-        4'b0100: update_flags <= 4'b1111;  // ADD
-        4'b1000: update_flags <= 4'b1110;  // TEST
-        4'b1001: update_flags <= 4'b1110;  // TESTQ
-        4'b1010: update_flags <= 4'b1111;  // COMPARE
-        4'b1100: update_flags <= 4'b1110;  // OR
-        4'b1101: update_flags <= 4'b1110;  // MOV
-        4'b1110: update_flags <= 4'b0000;  // BIT CLEAR
-        4'b1111: update_flags <= 4'b1110;  // MOVE NOT
-        default: update_flags <= 4'b0000;  // EVERYTHING ELSE
+        4'b0000: update_flags = 4'b1110;  // AND
+        4'b0001: update_flags = 4'b1110;  // XOR
+        4'b0010: update_flags = 4'b1111;  // SUB
+        4'b0100: update_flags = 4'b1111;  // ADD
+        4'b1000: update_flags = 4'b1110;  // TEST
+        4'b1001: update_flags = 4'b1110;  // TESTQ
+        4'b1010: update_flags = 4'b1111;  // COMPARE
+        4'b1100: update_flags = 4'b1110;  // OR
+        4'b1101: update_flags = 4'b1110;  // MOV
+        4'b1110: update_flags = 4'b0000;  // BIT CLEAR
+        4'b1111: update_flags = 4'b1110;  // MOVE NOT
+        default: update_flags = 4'b0000;  // EVERYTHING ELSE
       endcase
     end
     else begin
-      update_flags <= 4'b0000;    // RESETTING
+      update_flags = 4'b0000;    // RESETTING
     end
   end
 
