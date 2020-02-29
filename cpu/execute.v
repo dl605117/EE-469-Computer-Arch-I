@@ -36,6 +36,7 @@ module execute (
   wire [31:0] r2;
   wire [3:0] cond;
   reg [31:0] ALU_data;
+  wire do_write
 
   /////////// Assign statements ///////////
   assign opcode = inst_i[21+:4];
@@ -51,13 +52,19 @@ module execute (
     if(reset_i) begin
       inst_o <= 0;
       ALU_data_o <= 0;
+      do_write_o <= 0;
+      rd_addr_o <= 0;
     end else begin
       if(stall_i) begin
         inst_o <= inst_o;
-        ALU_data_o <= ALU_data_o
+        ALU_data_o <= ALU_data_o;
+        do_write_o <= do_write_o;
+        rd_addr_o <= rd_addr_o;
       end else begin
         inst_o <= inst_i;
         ALU_data_o <= ALU_data;
+        do_write_o <= do_write;
+        rd_addr_o <= rd_addr_i;
       end
     end
   end
@@ -153,13 +160,13 @@ module execute (
   always @(*) begin
     if ( cond_met )
       if ( ( instruction_codes == 3'b000 || instruction_codes == 3'b001 ) && s_bit ) // if write to registers and normal op
-        do_write_o = 1'b1;
+        do_write = 1'b1;
       else if ( instruction_codes == 3'b010 && s_bit = 1'b0 ) // writes only if Storing to Mem and not LOAD
-        do_write_o = 1'b1;
+        do_write = 1'b1;
       else
-        do_write_o = 1'b0;
+        do_write = 1'b0;
     else
-      do_write_o = 1'b0;
+      do_write = 1'b0;
   end
 
   // ************************************
