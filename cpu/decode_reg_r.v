@@ -17,6 +17,7 @@ module decode_reg_r (
   , output [3:0] r2_addr_o
   , output [3:0] rd_addr_o
   , output stall_o
+  , output flush_o
 );
   wire [3:0] rn_address;
   wire [3:0] rm_address;
@@ -64,5 +65,6 @@ module decode_reg_r (
     r2_addr_o <= r2_address;
     rd_addr_o <= rd_address;
     stall_o <= stall_i;
+    flush_o <= flush_i
   end
 endmodule

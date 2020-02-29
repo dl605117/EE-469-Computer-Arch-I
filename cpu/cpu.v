@@ -61,6 +61,7 @@ module cpu(
     , .r2_addr_o( r2_addr_rm_to_exec )
     , .rd_addr_o( rd_addr_rm_to_exec )
     , .stall_o( stall_decode_to_fetch )
+    , .flush_o( flush_decode_to_flush )
   );
 
   wire flush_exec_to_decode;
@@ -108,7 +109,7 @@ module cpu(
       .clk_i( clk )
     , .reset_i( reset )
     , .ALU_data_i( alu_data_exec )
-    , .store_data_i
+    , .store_data_i(32'b0)
     , .inst_i( inst_exec_to_mem )
     , .valid_i( valid_exec_to_mem )
     , .flush_i( flush_wb_to_mem )
