@@ -48,7 +48,7 @@ module mem (
     end else begin
       ALU_data_o <= ALU_data_i;
       wb_addr_o <= wb_addr;
-      valid_o <= valid_i
+      valid_o <= valid_i;
       load_o <= (instruction_codes == 3'b010 && s_bit);
     end
   end

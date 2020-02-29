@@ -61,10 +61,19 @@ module decode_reg_r (
   end
 
   always @(posedge clk_i) begin
-    r1_addr_o <= r1_address;
-    r2_addr_o <= r2_address;
-    rd_addr_o <= rd_address;
-    stall_o <= stall_i;
-    flush_o <= flush_i
+    if ( reset_i ) begin
+      r1_addr_o <= 0;
+      r2_addr_o <= 0;
+      rd_addr_o <= 0;
+      stall_o <= 0;
+      flush_o <= 0;
+    end
+    else begin
+      r1_addr_o <= r1_address;
+      r2_addr_o <= r2_address;
+      rd_addr_o <= rd_address;
+      stall_o <= stall_i;
+      flush_o <= flush_i;
+    end
   end
 endmodule

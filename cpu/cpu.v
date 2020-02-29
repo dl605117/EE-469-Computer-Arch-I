@@ -14,7 +14,7 @@ module cpu(
   // ************************************
   // ***** TO DOS ***********
   // ************************************
-  // stall(find cases for other stall)
+  // check stall and flush
 
   reg reset;
 
@@ -72,7 +72,7 @@ module cpu(
   wire r2_addr_rm_to_exec;
   wire rd_addr_rm_to_exec;
   wire instr_rm_to_exec;
-  wire stall_exec_to_decode;
+  wire stall_exec_to_rm;
 
   execute execute_module (
       .clk_i( clk )
@@ -87,15 +87,17 @@ module cpu(
     , .wb_addr_i( wb_addr )
     , .wb_en_i( wb_en )
     , .valid_i( valid_mem_to_exec )
+    , .flush_i()
     , .inst_o( inst_exec_to_mem )
     , .ALU_data_o( alu_data_exec )
     , .CPSR_o( CPSR )
-    , .stall_o( stall_exec_to_decode )
+    , .stall_o( stall_exec_to_rm )
     , .valid_o( valid_exec_to_mem )
     , .flush_o( flush_mem_to_exec )
     , .branch_o( branch )
     , .rd_addr_o( rd_addr_exec_to_mem )
     , .do_write_o( do_write_exec_to_mem )
+    , .rd_data_o( rd_data_exec_to_mem )
   );
 
   wire alu_data_exec;
@@ -109,7 +111,7 @@ module cpu(
       .clk_i( clk )
     , .reset_i( reset )
     , .ALU_data_i( alu_data_exec )
-    , .store_data_i(32'b0)
+    , .store_data_i( rd_data_exec_to_mem )
     , .inst_i( inst_exec_to_mem )
     , .valid_i( valid_exec_to_mem )
     , .flush_i( flush_wb_to_mem )
@@ -118,9 +120,9 @@ module cpu(
     , .mem_data_o( mem_data_mem_to_wb )
     , .wb_addr_o( wb_addr_mem_to_wb ) // write back address for register file
     , .valid_o( valid_mem_to_wb )
-    , .flush_o( flush_mem_to_exec )
-    , .load_o( load_mem_wb )
     , .do_write_o( do_write_mem_to_wb )
+    , .load_o( load_mem_wb )
+    , .flush_o( flush_mem_to_exec )
   );
 
   wire flush_wb_to_mem;
@@ -144,30 +146,6 @@ module cpu(
     , .pc_wb_o( pc_wb )
     , .flush_o( flush_wb_to_mem )
   );
-
-  // ************************************
-  // ******** LOADING & STORING *********
-  // ************************************
-  reg [31:0] mem_addr;
-  wire r_not_w;
-  wire [31:0] mem_data_o;
-
-  memory mem ( .clk_i(clk), .data_addr_i(mem_addr), .data_i(r1_preshift), .r_not_w_i(r_not_w), .data_o(mem_data_o) );
-
-  //store data in memory
-  always @(posedge clk) begin
-    if ( pc_state_n == exec_mem )
-      if ( instruction_codes == 3'b010 && ~s_bit ) // also L bit for load and Store 1 = Load 0 = Store
-        if( U_bit )
-          mem_addr <= r2 + inst[11:0];
-        else
-          mem_addr <= r2 - inst[11:0];
-      else
-        mem_addr <= mem_addr;
-    else
-      mem_addr <= mem_addr;
-  end
-
 
   // Controls the LED on the board.
   assign led = 1'b0;

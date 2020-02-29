@@ -10,7 +10,6 @@ module execute (
   , input [31:0] wb_data_i
   , input [3:0] wb_addr_i
   , input wb_en_i
-  , input stall_i
   , input valid_i
   , input flush_i
   , output [31:0] inst_o
@@ -157,8 +156,7 @@ module execute (
                     , .r1_i(r1)
                     , .r1_shift_o(r1_shift)
                     );
-                    if (instruction_codes == 3'b010 && ~s_bit)
-                     r1 =
+
   assign r1_ALU = (instruction_codes == 3'b010 && ~s_bit) ? {20'b0, inst_i[11:0]} :
                   instruction_codes == 3'b000 ? r1_shift : operand2;
   assign r2_ALU = r2;
@@ -171,7 +169,7 @@ module execute (
     if ( cond_met )
       if ( ( instruction_codes == 3'b000 || instruction_codes == 3'b001 ) && s_bit ) // if write to registers and normal op
         do_write = 1'b1;
-      else if ( instruction_codes == 3'b010 && s_bit = 1'b1 ) // Only write if LOADing
+      else if ( instruction_codes == 3'b010 && s_bit == 1'b1 ) // Only write if LOADing
         do_write = 1'b1;
       else
         do_write = 1'b0;
