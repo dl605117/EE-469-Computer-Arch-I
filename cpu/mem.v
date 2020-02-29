@@ -1,15 +1,18 @@
 module mem (
     input clk_i
-  , input reset
+  , input reset_i
   , input [31:0] ALU_data_i
   , input [31:0] store_data_i
   , input [31:0] inst_i
   , input valid_i
+  , input do_write_i
   , output [31:0] ALU_data_o
   , output [31:0] mem_data_o
   , output [3:0] wb_addr_o
   , output valid_o
-  , output wb_o
+  , output wb_en_o
+  , output [31:0] inst_o
+  , output do_write_o
 )
   assign wb_addr = inst_i[15:12];
   assign instruction_codes = inst_i[25+:3];
@@ -31,5 +34,6 @@ module mem (
     wb_addr_o <= wb_addr;
     valid_o <= valid_i
     load_i <= r_not_w;
+    inst_o <= inst_i'
   end
 endmodule

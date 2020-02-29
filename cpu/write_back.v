@@ -10,7 +10,7 @@ module write_back (
   , output [31:0] wb_data_o
   , output [3:0] wb_addr_o
   , output pc_wb_o
-  , flush_o;
+  , output flush_o
 )
   assign wb_addr_o = wb_addr_i;
   assign wb_en_o = valid_i & do_write_i; ///check

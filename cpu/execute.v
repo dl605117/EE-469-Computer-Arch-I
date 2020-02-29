@@ -36,7 +36,7 @@ module execute (
   wire [31:0] r2;
   wire [3:0] cond;
   reg [31:0] ALU_data;
-  wire do_write
+  wire do_write;
 
   /////////// Assign statements ///////////
   assign opcode = inst_i[21+:4];
