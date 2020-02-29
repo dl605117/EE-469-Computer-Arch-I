@@ -91,8 +91,8 @@ module execute (
   always @(*) begin
     if (wb_addr_i == r1_addr_i && wb_en_i)
       r1 = wb_data_i;
-    else if (rd_addr_o == r1_addr_i && valid_o && do_write_o)
-      r1 = ALU_data_o;
+    else if (rd_addr_o == r1_addr_i && valid_o && do_write_o) // This will loop forever?? NEED FIX
+      r1 = ALU_data_o;  // ALU_data_o is not currently clocked
     else
       r1 = r1_i;
     if (wb_addr_i == r2_addr_i && wb_en_i)
