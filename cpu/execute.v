@@ -157,11 +157,12 @@ module execute (
   // ************************************
   // ************** DO_WRITE ************
   // ************************************
+  // solely for writebacks to register file
   always @(*) begin
     if ( cond_met )
       if ( ( instruction_codes == 3'b000 || instruction_codes == 3'b001 ) && s_bit ) // if write to registers and normal op
         do_write = 1'b1;
-      else if ( instruction_codes == 3'b010 && s_bit = 1'b0 ) // writes only if Storing to Mem and not LOAD
+      else if ( instruction_codes == 3'b010 && s_bit = 1'b1 ) // Only write if LOADing
         do_write = 1'b1;
       else
         do_write = 1'b0;
