@@ -8,6 +8,7 @@ module decode_reg_r (
   , input [31:0] wb_data_i
   , input [3:0] wb_addr_i
   , input wb_en_i
+  , input stall_i
   , output valid_o
   , output [31:0] r1_o
   , output [31:0] r2_o
@@ -15,7 +16,8 @@ module decode_reg_r (
   , output [3:0] r1_addr_o
   , output [3:0] r2_addr_o
   , output [3:0] rd_addr_o
-)
+  , output stall_o
+);
   wire [3:0] rn_address;
   wire [3:0] rm_address;
   wire [3:0] rd_address;
@@ -37,7 +39,6 @@ module decode_reg_r (
       r1_address = rm_address;
   end
 
-
   register_file rf (  .clk_i(clk)
                     , .reset_i(reset_i)
                     , .r1_addr_i(r1_address)
@@ -52,7 +53,7 @@ module decode_reg_r (
 
   always @(posedge clk_i) begin
     inst_o <= inst_i;
-    if(flush_i)
+    if ( reset_i || flush_i )
       valid_o <= 1'b0;
     else
       valid_o <= valid_i;
@@ -62,5 +63,6 @@ module decode_reg_r (
     r1_addr_o <= r1_address;
     r2_addr_o <= r2_address;
     rd_addr_o <= rd_address;
+    stall_o <= stall_i;
   end
 endmodule

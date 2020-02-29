@@ -5,6 +5,7 @@ module fetch (
   , input pc_wb_i
   , input data_i
   , input flush_i
+  , input stall_i
   , output valid_o
   , output [31:0] inst_o
   , output [31:0] pc
@@ -30,7 +31,9 @@ module fetch (
   // ********* Increment PC *************
   // ************************************
   always @(*) begin ////check PLS!!!!!
-    if ( branch_i )   // Does Branch with Conditions
+    if ( stall_i )
+      pc_n = pc_r;
+    else if ( branch_i )   // Does Branch with Conditions
       pc_n = pc_plus_8 + { {6{branch_address[23]}}, branch_address, 2'b0 };
     else if ( pc_wb_i ) // if writing to register 15, needs to write to PC as well
       pc_n = data_i;

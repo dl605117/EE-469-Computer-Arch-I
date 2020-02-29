@@ -17,60 +17,30 @@ module cpu(
   // stall(find cases for other stall)
 
   reg reset;
-  reg [31:0] inst;
-  wire [31:0] CPSR;
-  reg [31:0] pc_r, pc_n;
-  wire [31:0] operand2;
-  wire [3:0] rn_address;
-  wire [3:0] rm_address;
-  wire [3:0] rd_address;
-  wire [3:0] r1_address;
-  wire [3:0] r2_address;
-  wire [3:0] opcode;
-  wire [2:0] instruction_codes;
-  reg [31:0] r1_preshift;
-  reg [32:0] data;
-  reg do_write;
-  wire s_bit; // also L bit for load and Store
-  wire [7:0] immediate;
-  wire [3:0] rotate;
-  wire [23:0] branch_address;
-  wire [31:0] r1; //post shift r1
-  wire [31:0] r2;
-
-  assign branch_address = inst[0+:24];
-  assign rn_address = inst[16+:4];    // r2
-  assign rm_address = inst[0+:4];     // r1
-  assign opcode = inst[21+:4];
-  assign instruction_codes = inst[25+:3];
-  assign rotate = inst[8+:4];
-  assign immediate = inst[0+:8];
 
   wire [31:0] wb_data;
   wire [3:0] wb_addr;
   wire wb_en;
 
-  wire alu_data_exec;
   wire branch, pc_wb, pc;
-  wire [31:0] inst;
-  wire [31:0] exec_data;
 
   fetch fetch_module (
       .clk_i( clk )
     , .reset_i( reset )
     , .branch_i( branch )
     , .pc_wb_i( pc_wb )
-    , .data_i( exec_data )
+    , .data_i( wb_data )
     , .flush_i( flush_decode_to_flush )
+    , .stall_i( stall_decode_to_fetch )
     , .valid_o( valid_fetch_to_decode )
-    , .inst_o( inst )
+    , .inst_o( inst_fetch_to_decode )
     , .pc( pc )
   );
 
   wire inst_fetch_to_decode;
   wire valid_fetch_to_decode;
-  wire wb_en;
   wire flush_decode_to_flush;
+  wire stall_decode_to_fetch;
 
   decode_reg_r decode_module (
       .clk_i( clk )
@@ -82,6 +52,7 @@ module cpu(
     , .wb_data_i( wb_data )
     , .wb_addr_i( wb_addr )
     , .wb_en_i( wb_en )
+    , .stall_i( stall_exec_to_decode )
     , .valid_o( valid_rm_to_exec )
     , .r1_o( r1_rm_to_exec )
     , .r2_o( r2_rm_to_exec )
@@ -89,6 +60,7 @@ module cpu(
     , .r1_addr_o( r1_addr_rm_to_exec )
     , .r2_addr_o( r2_addr_rm_to_exec )
     , .rd_addr_o( rd_addr_rm_to_exec )
+    , .stall_o( stall_decode_to_fetch )
   );
 
   wire flush_exec_to_decode;
@@ -99,6 +71,7 @@ module cpu(
   wire r2_addr_rm_to_exec;
   wire rd_addr_rm_to_exec;
   wire instr_rm_to_exec;
+  wire stall_exec_to_decode;
 
   execute execute_module (
       .clk_i( clk )
@@ -109,15 +82,14 @@ module cpu(
     , .r2_addr_i( r2_addr_rm_to_exec )
     , .rd_addr_i( rd_addr_rm_to_exec )
     , .inst_i( instr_rm_to_exec )
-    , .wb_data_i( )
-    , .wb_addr_i()
-    , .wb_en_i()
-    , .stall_i()
+    , .wb_data_i( wb_data )
+    , .wb_addr_i( wb_addr )
+    , .wb_en_i( wb_en )
     , .valid_i( valid_mem_to_exec )
     , .inst_o( inst_exec_to_mem )
     , .ALU_data_o( alu_data_exec )
     , .CPSR_o( CPSR )
-    , .stall_o( )
+    , .stall_o( stall_exec_to_decode )
     , .valid_o( valid_exec_to_mem )
     , .flush_o( flush_mem_to_exec )
     , .branch_o( branch )
@@ -143,10 +115,8 @@ module cpu(
     , .do_write_i( do_write_exec_to_mem )
     , .ALU_data_o( alu_data_mem )
     , .mem_data_o( mem_data_mem_to_wb )
-    , .wb_addr_o( wb_mem_to_wb ) // write back address for register file
+    , .wb_addr_o( wb_addr_mem_to_wb ) // write back address for register file
     , .valid_o( valid_mem_to_wb )
-    , .wb_en_o( wb_en_mem_to_wb )
-    , .inst_o( inst_mem_to_wb )
     , .flush_o( flush_mem_to_exec )
     , .load_o( load_mem_wb )
     , .do_write_o( do_write_mem_to_wb )
@@ -155,34 +125,31 @@ module cpu(
   wire flush_wb_to_mem;
   wire alu_data_mem;
   wire mem_data_mem_to_wb;
-  wire wb_mem_to_wb;
+  wire wb_addr_mem_to_wb;
   wire valid_mem_to_wb;
-  wire wb_en_mem_to_wb;
-  wire inst_mem_to_wb;
   wire load_mem_wb;
   wire do_write_mem_to_wb;
 
   write_back wb_module(
       .mem_data_i( mem_data_mem_to_wb )
     , .ALU_data_i( alu_data_mem )
-    , .inst_i( inst_mem_to_wb )
     , .load_i( load_mem_wb )
     , .valid_i( valid_mem_to_wb )
     , .do_write_i( do_write_mem_to_wb )
-    , .wb_addr_i
-    , .wb_en_o
-    , .wb_data_o
-    , .wb_addr_o
-    , .pc_wb_o
-    , .flush_o
+    , .wb_addr_i( wb_addr_mem_to_wb )
+    , .wb_en_o( wb_en )
+    , .wb_data_o( wb_data )
+    , .wb_addr_o( wb_addr )
+    , .pc_wb_o( pc_wb )
+    , .flush_o( flush_wb_to_mem )
   );
+
   // ************************************
   // ******** LOADING & STORING *********
   // ************************************
   reg [31:0] mem_addr;
   wire r_not_w;
   wire [31:0] mem_data_o;
-
 
   memory mem ( .clk_i(clk), .data_addr_i(mem_addr), .data_i(r1_preshift), .r_not_w_i(r_not_w), .data_o(mem_data_o) );
 
