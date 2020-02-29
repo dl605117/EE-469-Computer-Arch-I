@@ -1,5 +1,6 @@
 module fetch (
     input clk_i
+  , input reset_i
   , input branch_i
   , input pc_wb_i
   , input data_i
@@ -37,12 +38,21 @@ module fetch (
       pc_n = pc_plus_4;
   end
 
-  always @(posedge clk_i) pc_r <= pc_n;
+  always @(posedge clk_i)
+    if ( reset_i )
+      pc_r <= 32'b0;
+    else
+      pc_r <= pc_n;
+
   assign pc = pc_r;
 
   // ************************************
   // *************** Valid **************
   // ************************************
-  assign valid_o = flush_i ? 1'b0 : 1'b1;
+  always @(*)
+    if ( reset_i || flush_i )
+      valid_o = 1'b0;
+    else
+      valid_o = 1'b1;
 
 endmodule

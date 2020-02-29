@@ -1,4 +1,5 @@
 module register_file( input clk_i
+      , input reset_i
       , input [3:0] r1_addr_i
       , input [3:0] r2_addr_i
       , input wr_en_i
@@ -19,7 +20,13 @@ module register_file( input clk_i
   end
 
   always @(posedge clk_i) begin
-    if ( r1_addr_i == 4'b1111 )
+    if ( reset_i ) begin
+      registers[0] = 32'b0;
+      registers[1] = 32'b10000000_00000000_00000000_00000000;
+      for ( i = 2; i < 15; i++ )
+        registers[i] <= i;
+    end
+    else if ( r1_addr_i == 4'b1111 )
       r1_o <= pc;
     else
       r1_o <= registers[r1_addr_i];

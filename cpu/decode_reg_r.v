@@ -1,5 +1,6 @@
 module decode_reg_r (
     input clk_i
+  , reset_i
   , input pc_i
   , input [31:0] inst_i
   , input valid_i
@@ -38,6 +39,7 @@ module decode_reg_r (
 
 
   register_file rf (  .clk_i(clk)
+                    , .reset_i(reset_i)
                     , .r1_addr_i(r1_address)
                     , .r2_addr_i(r2_address)
                     , .wr_en_i(wb_en_i)

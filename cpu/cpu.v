@@ -16,6 +16,7 @@ module cpu(
   // ************************************
   // stall(find cases for other stall)
 
+  reg reset;
   reg [31:0] inst;
   wire [31:0] CPSR;
   reg [31:0] pc_r, pc_n;
@@ -49,12 +50,14 @@ module cpu(
   wire [3:0] wb_addr;
   wire wb_en;
 
+  wire alu_data_exec;
   wire branch, pc_wb, pc;
   wire [31:0] inst;
   wire [31:0] exec_data;
 
   fetch fetch_module (
       .clk_i( clk )
+    , .reset_i( reset )
     , .branch_i( branch )
     , .pc_wb_i( pc_wb )
     , .data_i( exec_data )
@@ -105,21 +108,25 @@ module cpu(
     , rd_addr_i( rd_addr_rm_to_exec )
     , inst_i( instr_rm_to_exec )
     , wb_data_i( )
-    , wb_addr_i
-    , wb_en_i
-    , stall_i
-    , valid_i()
-    , inst_o
-    , ALU_data_o
-    , CPSR_o;
-    , stall_o
-    , valid_o
-    , flush_o
-    , branch_o
-    , rd_addr_o
-    , do_write_o
+    , wb_addr_i()
+    , wb_en_i()
+    , stall_i()
+    , valid_i( valid_mem_to_exec )
+    , inst_o( inst_exec_to_mem )
+    , ALU_data_o( alu_data_exec )
+    , CPSR_o( CPSR )
+    , stall_o( )
+    , valid_o( valid_exec_to_mem )
+    , flush_o( flush_mem_to_exec )
+    , branch_o( branch )
+    , rd_addr_o( rd_addr_exec_to_mem )
+    , do_write_o( do_write_exec_to_mem )
   );
 
+  wire valid_exec_to_mem;
+  wire flush_mem_to_exec;
+  wire rd_addr_exec_to_mem;
+  wire do_write_exec_to_mem;
 
   // ************************************
   // ******** LOADING & STORING *********

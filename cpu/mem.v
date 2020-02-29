@@ -1,5 +1,6 @@
 module mem (
-   input clk
+    input clk_i
+  , input reset
   , input [31:0] ALU_data_i
   , input [31:0] store_data_i
   , input [31:0] inst_i
@@ -16,6 +17,7 @@ module mem (
   assign r_not_w = ~(instruction_codes == 3'b010 && ~s_bit);
 
   memory mem (  .clk_i(clk)
+              , .reset_i(reset_i)
               , .data_addr_i(mem_addr)
               , .data_i(store_data_i)
               , .r_not_w_i(r_not_w)

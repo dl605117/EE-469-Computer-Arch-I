@@ -14,7 +14,7 @@ module execute (
   , input flush_i
   , output [31:0] inst_o
   , output [31:0] ALU_data_o
-  , output [31:0] CPSR_o;
+  , output [31:0] CPSR_o
   , output stall_o
   , output valid_o
   , output flush_o
@@ -91,8 +91,8 @@ module execute (
   always @(*) begin
     if (wb_addr_i == r1_addr_i && wb_en_i)
       r1 = wb_data_i;
-    else if (rd_addr_o == r1_addr_i && valid_o && do_write_o) // This will loop forever?? NEED FIX
-      r1 = ALU_data_o;  // ALU_data_o is not currently clocked
+    else if (rd_addr_o == r1_addr_i && valid_o && do_write_o)
+      r1 = ALU_data_o;
     else
       r1 = r1_i;
     if (wb_addr_i == r2_addr_i && wb_en_i)

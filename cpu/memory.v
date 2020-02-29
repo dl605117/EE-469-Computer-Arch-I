@@ -1,4 +1,5 @@
 module memory ( input clk_i
+  , input reset_i
   , input [31:0] data_addr_i
   , input [31:0] data_i
   , input r_not_w_i
@@ -14,10 +15,14 @@ module memory ( input clk_i
   end
 
   always @( posedge clk_i ) begin
-    if(valid_i) begin
+    if ( reset_i ) begin
+      for ( i = 0; i < 12; i = i + 4 )
+        { memory[i], memory[i+1], memory[i+2], memory[i+3] } <= 32'b0;
+    end
+    else if(valid_i) begin
       data_o <= { memory[data_addr_i],  memory[data_addr_i+1], memory[data_addr_i+2], memory[data_addr_i+3] };
-      if ( ~r_not_w_i )
-        { memory[data_addr_i],  memory[data_addr_i+1], memory[data_addr_i+2], memory[data_addr_i+3] } <= data_i;
+    if ( ~r_not_w_i )
+      { memory[data_addr_i],  memory[data_addr_i+1], memory[data_addr_i+2], memory[data_addr_i+3] } <= data_i;
     end
   end
 
