@@ -21,8 +21,8 @@ module register_file( input clk_i
 
   always @(posedge clk_i) begin
     if ( reset_i ) begin
-      registers[0] = 32'b0;
-      registers[1] = 32'b10000000_00000000_00000000_00000000;
+      registers[0] <= 32'b0;
+      registers[1] <= 32'b10000000_00000000_00000000_00000000;
       for ( i = 2; i < 15; i++ )
         registers[i] <= i;
     end

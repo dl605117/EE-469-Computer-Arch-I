@@ -133,9 +133,8 @@ module cpu(
   // ************************************
   reg [31:0] mem_addr;
   wire r_not_w;
-  assign r_not_w = ~(pc_state_r == write && instruction_codes == 3'b010 && ~s_bit);
   wire [31:0] mem_data_o;
-  wire U_bit = inst[23]; // 1 = add, 0 = subtract from base
+
 
   memory mem ( .clk_i(clk), .data_addr_i(mem_addr), .data_i(r1_preshift), .r_not_w_i(r_not_w), .data_o(mem_data_o) );
 
