@@ -37,9 +37,6 @@ module cpu(
   wire [31:0] r1; //post shift r1
   wire [31:0] r2;
 
-
-  assign CPSR = { n_flag, z_flag, c_flag, v_flag, 22'b0, 5'b11111 };
-  assign s_bit = inst[20];
   assign branch_address = inst[0+:24];
   assign rn_address = inst[16+:4];    // r2
   assign rm_address = inst[0+:4];     // r1
@@ -48,55 +45,79 @@ module cpu(
   assign rotate = inst[8+:4];
   assign immediate = inst[0+:8];
 
-  wire branch, pc_wb;
+  wire [31:0] wb_data;
+  wire [3:0] wb_addr;
+  wire wb_en;
+
+  wire branch, pc_wb, pc;
   wire [31:0] inst;
   wire [31:0] exec_data;
 
   fetch fetch_module (
-    .clk_i( clk )
+      .clk_i( clk )
     , .branch_i( branch )
     , .pc_wb_i( pc_wb )
     , .data_i( exec_data )
+    , .flush_i( flush_decode_to_flush )
+    , .valid_o( valid_fetch_to_decode )
     , .inst_o( inst )
-    );
+    , .pc( pc )
+  );
 
   wire inst_fetch_to_decode;
   wire valid_fetch_to_decode;
-  wire wb_data_fetch_to_decode;
-  wire wb_addr_fetch_to_decode;
-  wire wb_en_fetch_to_decode;
-  wire valid_fetch_to_decode;
-  wire r1_fetch_to_decode;
-  wire r2_fetch_to_decode;
+  wire wb_en;
+  wire flush_decode_to_flush;
 
-  decode_reg_r register_module (
-    .clk_i( clk )
-    , .pc_i( pc_r )
+  decode_reg_r decode_module (
+      .clk_i( clk )
+    , .pc_i( pc )
     , .inst_i( inst_fetch_to_decode )
     , .valid_i( valid_fetch_to_decode )
-    , .flush_i( flush_fetch_to_decode )
-    , .wb_data_i( wb_data_fetch_to_decode )
-    , .wb_addr_i( wb_addr_fetch_to_decode )
-    , .wb_en_i( wb_en_fetch_to_decode )
-    , .valid_o( valid_fetch_to_decode )
-    , .r1_o( r1_fetch_to_decode )
-    , .r2_o( r2_fetch_to_decode )
-    , .inst_o( inst_fetch_to_decode )
-    );
+    , .flush_i( flush_exec_to_decode )
+    , .wb_data_i( wb_data )
+    , .wb_addr_i( wb_addr )
+    , .wb_en_i( wb_en )
+    , .valid_o( valid_rm_to_exec )
+    , .r1_o( r1_rm_to_exec )
+    , .r2_o( r2_rm_to_exec )
+    , .inst_o( instr_rm_to_exec )
+    , .r1_addr_o( r1_addr_rm_to_exec )
+    , .r2_addr_o( r2_addr_rm_to_exec )
+    , .rd_addr_o( rd_addr_rm_to_exec )
+  );
+
+  wire flush_exec_to_decode;
+  wire valid_rm_to_exec;
+  wire r1_rm_to_exec;
+  wire r2_rm_to_exec;
+  wire r1_addr_rm_to_exec;
+  wire r2_addr_rm_to_exec;
+  wire rd_addr_rm_to_exec;
+  wire instr_rm_to_exec;
 
   execute execute_module (
-    input clk_i
-    , input [31:0] r1_i
-    , input [31:0] r2_i
-    , input [31:0] inst_i
-    , input stall_i
-    , input valid_i
-    , output [31:0] inst_o
-    , output [31:0] ALU_data_o
-    , output stall_o
-    , output valid_o
-    , output flush_o
-    , output branch
+      .clk_i( clk )
+    , .r1_i( r1_rm_to_exec )
+    , .r2_i( r2_rm_to_exec )
+    , r1_addr_i( r1_addr_rm_to_exec )
+    , r2_addr_i( r2_addr_rm_to_exec )
+    , rd_addr_i( rd_addr_rm_to_exec )
+    , inst_i( instr_rm_to_exec )
+    , wb_data_i( )
+    , wb_addr_i
+    , wb_en_i
+    , stall_i
+    , valid_i()
+    , inst_o
+    , ALU_data_o
+    , CPSR_o;
+    , stall_o
+    , valid_o
+    , flush_o
+    , branch_o
+    , rd_addr_o
+    , do_write_o
   );
 
 
@@ -123,18 +144,6 @@ module cpu(
         mem_addr <= mem_addr;
     else
       mem_addr <= mem_addr;
-  end
-
-  // ************************************
-  // **** WRITING BACK TO REGISTERS *****
-  // ************************************
-
-  // UPDATES write address
-  always @(*) begin   // Check with Manual
-    if ( instruction_codes == 3'b101 )  // Branch
-      rd_address = 4'b1110;
-    else
-      rd_address = inst[12+:4];
   end
 
 

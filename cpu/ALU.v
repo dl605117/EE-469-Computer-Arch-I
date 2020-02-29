@@ -92,8 +92,6 @@ assign b_temp = ~b;
   // ******* CHECKING CONDITIONS ********
   // ************************************
   // cond code
-  //wire [3:0] cond;
-  //assign cond = inst[28+:4];
 
   always @(*) begin
     cond_met = 1'b0;

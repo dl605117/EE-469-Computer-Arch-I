@@ -11,13 +11,16 @@ module execute (
   , input wb_en_i
   , input stall_i
   , input valid_i
+  , input flush_i
   , output [31:0] inst_o
   , output [31:0] ALU_data_o
+  , output [31:0] CPSR_o;
   , output stall_o
   , output valid_o
   , output flush_o
-  , output branch
+  , output branch_o
   , output [3:0] rd_addr_o
+  , output do_write_o
 );
   /////////// Init statements /////////////
   wire [3:0] opcode;
@@ -26,22 +29,20 @@ module execute (
   wire [3:0] rotate;
   wire [31:0] operand2;
   wire s_bit;
-  wire n_flag, v_flag, z_flag, c_flag;
   reg [3:0] update_flags;
   reg flush_o;
-  wire branch;
-  wire [31:0] CPSR;
   wire [31:0] r1;
   wire [31:0] r2;
+  wire [3:0] cond;
 
   /////////// Assign statements ///////////
   assign opcode = inst_i[21+:4];
   assign instruction_codes = inst_i[25+:3];
-  assign immediate = inst[0+:8];
-  assign rotate = inst[8+:4];
+  assign immediate = inst_i[0+:8];
+  assign rotate = inst_i[8+:4];
   assign stall_o = stall_i; // NEEDS TO BE FIXED
-  assign s_bit = inst[20];
-  assign CPSR = { n_flag, z_flag, c_flag, v_flag, 22'b0, 5'b11111 };
+  assign s_bit = inst_i[20];
+  assign cond = inst_i[28+:4];
 
   //////////// pipeline registers ////////////
   always @(posedge clk_i) begin
@@ -50,117 +51,39 @@ module execute (
 
   //////////// Setting Valid ////////////
   always @(posedge clk_i)
-    if ( cond_met )
-      if ( branch ) begin
-        valid_o <= 1'b0;
-        flush_o <= 1'b1;
-      end
-      else begin
-        valid_o <= valid_i;
-        flush_o <= 1'b0;
-      end
-    else begin
+    if ( flush_i || ( cond_met && branch_o ) )
       valid_o <= 1'b0;
-      flush_o <= 1'b0;
-    end
-
-  //////////////// Modules ////////////////
-  rotate rot ( rotate, immediate, operand2 );
-  ALU alu (.instruction_codes(instruction_codes), .opcode(opcode), .a(r2_ALU), .b(r1_ALU), .data(ALU_data_o));
-
-  // ************************************
-  // ************ FLAGS *****************
-  // ************************************
-  // UPDATING FLAGS
-  always @(*) begin
-    if ( update_flags[3] )
-      n_flag = data[31];     // negative flag
     else
-    n_flag = n_flag;
+      valid_o <= valid_i;
 
-    if ( update_flags[2] )
-      z_flag = (data == 0);     // zero flag
+  /////////// Setting Flush ////////////
+  always @(posedge clk_i)
+    if ( flush_i || ( cond_met && branch_o ) )
+      flush_o <= 1'b1;
     else
-      z_flag = z_flag;
+      flush_o <= flush_i;
 
-    if ( update_flags[1] )
-      c_flag = data[32];     // carry flag
-    else
-      c_flag = c_flag;
-
-    if ( update_flags[0] )   // overflow flag
-      if(instruction_codes == 3'b001)
-        v_flag = (opcode == 4'b0100) ? operand2[31] & r2[31] && (!data[31]) || (!operand2[31] & !r2[31] && data[31])
-              : !operand2[31] & r2[31] && (!data[31]) || (operand2[31] & !r2[31] && data[31]);
-      else
-        v_flag = (opcode == 4'b0100) ? r1[31] & r2[31] && (!data[31]) || (!r1[31] & !r2[31] && data[31])
-              : r1[31] & !r2[31] && (!data[31]) || (!r1[31] & r2[31] && data[31]);
-    else
-      v_flag = v_flag;
-  end
-
-  //4'bxxxx : {n_flag, z_flag, c_flag, v_flag}
-  // SETTING UPDATE FLAGS
-  always @( posedge clk ) begin
-    if ( s_bit & ( instruction_codes == 3'b000 | instruction_codes == 3'b001 ) ) begin
-      case ( opcode )
-        4'b0000: update_flags <= 4'b1110;  // AND
-        4'b0001: update_flags <= 4'b1110;  // XOR
-        4'b0010: update_flags <= 4'b1111;  // SUB
-        4'b0100: update_flags <= 4'b1111;  // ADD
-        4'b1000: update_flags <= 4'b1110;  // TEST
-        4'b1001: update_flags <= 4'b1110;  // TESTQ
-        4'b1010: update_flags <= 4'b1111;  // COMPARE
-        4'b1100: update_flags <= 4'b1110;  // OR
-        4'b1101: update_flags <= 4'b1110;  // MOV
-        4'b1110: update_flags <= 4'b0000;  // BIT CLEAR
-        4'b1111: update_flags <= 4'b1110;  // MOVE NOT
-        default: update_flags <= 4'b0000;  // EVERYTHING ELSE
-      endcase
-    end
-    else begin
-      update_flags <= 4'b0000;    // RESETTING
-    end
-  end
-
-  // ************************************
-  // ******* CHECKING CONDITIONS ********
-  // ************************************
-  // cond code
-  wire [3:0] cond;
-  assign cond = inst[28+:4];
-  wire cond_met;
-
-  always @(*) begin
-    cond_met = 1'b0;
-    case ( cond )    // Checking Condition Codes for Jump
-      4'b0000: if ( z_flag ) cond_met = 1'b1;                          // EQ
-      4'b0001: if ( ~z_flag ) cond_met = 1'b1;				                  // NE
-      4'b0010: if ( c_flag ) cond_met = 1'b1;				                  // CS/HS
-      4'b0011: if ( ~c_flag ) cond_met = 1'b1; 				                // CC/LO
-      4'b0100: if ( n_flag ) cond_met = 1'b1; 				                  // MI
-      4'b0101: if ( ~n_flag ) cond_met = 1'b1;				                  // PL
-      4'b0110: if ( v_flag ) cond_met = 1'b1;				                  // VS
-      4'b0111: if ( ~v_flag ) cond_met = 1'b1; 				                // VC
-      4'b1000: if ( c_flag && ~z_flag ) cond_met = 1'b1; 			        // HI
-      4'b1001: if ( ~c_flag && z_flag ) cond_met = 1'b1;			          // LS
-      4'b1010: if ( n_flag == v_flag ) cond_met = 1'b1; 		            // GE
-      4'b1011: if ( n_flag != v_flag ) cond_met = 1'b1;		            // LT
-      4'b1100: if ( ~z_flag && (n_flag == v_flag) ) cond_met = 1'b1; 	// GT
-      4'b1101: if ( z_flag && (n_flag != v_flag) ) cond_met = 1'b1;	  // LE
-      4'b1110: cond_met = 1'b1;                                        // ALWAYS
-      default: cond_met = 0; 				                                  // Otherwise
-    endcase
-  end
+  //////////////// ALU ////////////////
+  ALU ALU_module (
+    .instruction_codes( inst_i )
+    , .opcode( opcode )
+    , .a( r2_ALU )
+    , .b( r1_ALU )
+    , .cond( cond )
+    , .s_bit( s_bit )
+    , .data( ALU_data_o )
+    , .CPSR( CPSR_o )
+    , .cond_met( cond_met )
+  );
 
   // ************************************
   // ************ BRANCHING *************
   // ************************************
   always @(*)
     if ( cond_met && instruction_codes == 3'b101 )
-      branch = 1'b1;
+      branch_o = 1'b1;
     else
-      branch = 1'b0;
+      branch_o = 1'b0;
 
   // ************************************
   // *********** Data Hazard ************
@@ -186,10 +109,27 @@ module execute (
   wire [31:0] r1_shift;
   wire [31:0] r1_ALU;
   wire [31:0] r2_ALU;
+  rotate rot ( rotate, immediate, operand2 );
   shifter shifting (  .inst_i(inst_i[11:5])
                     , .r1_i(r1)
                     , .r1_shift_o(r1_shift)
                     );
-  assign r1_ALU =    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  assign r1_ALU = instruction_codes == 3'b000 ? r1_shift : operand2;
   assign r2_ALU = r2;
+
+  // ************************************
+  // ************** DO_WRITE ************
+  // ************************************
+  always @(*) begin
+    if ( cond_met )
+      if ( ( instruction_codes == 3'b000 || instruction_codes == 3'b001 ) && s_bit ) // if write to registers and normal op
+        do_write_o = 1'b1;
+      else if ( instruction_codes == 3'b010 && s_bit = 1'b0 ) // writes only if Storing to Mem and not LOAD
+        do_write_o = 1'b1;
+      else
+        do_write_o = 1'b0;
+    else
+      do_write_o = 1'b0;
+  end
+
 endmodule
