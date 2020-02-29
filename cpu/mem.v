@@ -11,12 +11,10 @@ module mem (
   , output [31:0] mem_data_o
   , output [3:0] wb_addr_o
   , output valid_o
-  , output wb_en_o
-  , output [31:0] inst_o
   , output do_write_o
   , output flush_o
   , output load_o
-)
+);
 
   /////////// wire/reg  ///////////
   wire r_not_w;
@@ -29,6 +27,7 @@ module mem (
   assign s_bit = inst[20];
   assign r_not_w = ~(instruction_codes == 3'b010 && ~s_bit);
   assign U_bit = inst[23]; // 1 = add, 0 = subtract from base
+  assign flush_o = flush_i;
 
   ////////// memory addr ///////////////
   always @(*) begin
@@ -50,12 +49,11 @@ module mem (
               , .data_o(mem_data_o)  //already pipeline
               );
 
-  // pipeline registers
+  ////////// pipeline registers ///////////
   always @(posedge clk) begin
     ALU_data_o <= ALU_data_i;
     wb_addr_o <= wb_addr;
     valid_o <= valid_i
-    load_i <= r_not_w;
-    inst_o <= inst_i'
+    load_o <= r_not_w;
   end
 endmodule
