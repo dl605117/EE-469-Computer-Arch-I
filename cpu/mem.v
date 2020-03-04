@@ -45,11 +45,13 @@ module mem (
       wb_addr_o <= 0;
       valid_o <= 0;
       load_o <= 0;
+      do_write_o <= 0;
     end else begin
       ALU_data_o <= ALU_data_i;
       wb_addr_o <= wb_addr;
       valid_o <= valid_i;
       load_o <= (instruction_codes == 3'b010 && s_bit);
+      do_write_o <= do_write_i;
     end
   end
 endmodule
