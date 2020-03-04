@@ -2,8 +2,8 @@ module fetch (
     input clk_i
   , input reset_i
   , input branch_i
-  , input pc_wb_i
-  , input data_i
+  , input [31:0] pc_wb_i
+  , input [31:0] data_i
   , input flush_i
   , input stall_i
   , output valid_o
@@ -25,7 +25,7 @@ module fetch (
                   , .inst(inst_o)
                   );
 
-  initial pc_r = 0;
+  initial pc_r = 32'b0;
 
   // ************************************
   // ********* Increment PC *************

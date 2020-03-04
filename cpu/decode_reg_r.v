@@ -1,7 +1,7 @@
 module decode_reg_r (
     input clk_i
   , input reset_i
-  , input pc_i
+  , input [31:0] pc_i
   , input [31:0] inst_i
   , input valid_i
   , input flush_i

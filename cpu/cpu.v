@@ -109,6 +109,7 @@ module cpu(
   wire [3:0] rd_addr_exec_to_mem;
   wire do_write_exec_to_mem;
   wire [31:0] inst_exec_to_mem;
+  wire [31:0] rd_data_exec_to_mem;
 
   mem memory_module (
       .clk_i( clk )
@@ -131,7 +132,7 @@ module cpu(
   wire flush_wb_to_mem;
   wire [31:0] alu_data_mem;
   wire [31:0] mem_data_mem_to_wb;
-  wire [4:0] wb_addr_mem_to_wb;
+  wire [3:0] wb_addr_mem_to_wb;
   wire valid_mem_to_wb;
   wire load_mem_wb;
   wire do_write_mem_to_wb;

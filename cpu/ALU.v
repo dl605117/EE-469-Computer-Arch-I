@@ -6,10 +6,12 @@ module ALU (
   , input [31:0] a, b
   , input [3:0] cond
   , input s_bit
-  , output [32:0] data
+  , output [31:0] ALU_data
   , output [31:0] CPSR
   , output cond_met
 );
+wire [32:0] data;
+assign ALU_data = data[0+:32];
 // a = rn or r2
 // b = rm (muxed in as rm or operand2) or r1
 wire [31:0] b_temp;
