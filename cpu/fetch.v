@@ -2,6 +2,7 @@ module fetch (
     input wire clk_i
   , input wire reset_i
   , input wire branch_i
+  , input wire branch_address_i
   , input wire [31:0] pc_wb_i
   , input wire [31:0] data_i
   , input wire flush_i
