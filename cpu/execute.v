@@ -23,6 +23,7 @@ module execute (
   , output [3:0] rd_addr_o
   , output do_write_o
   , output [31:0] rd_data_o
+  , output [23:0] branch_address_o
 );
   /////////// Init statements /////////////
   wire [3:0] opcode;
@@ -32,7 +33,6 @@ module execute (
   wire [31:0] operand2;
   wire s_bit;
   reg [3:0] update_flags;
-  reg flush_o;
   wire [31:0] r1;
   wire [31:0] r2;
   wire [3:0] cond;
@@ -48,6 +48,7 @@ module execute (
   assign immediate = inst_i[0+:8];
   assign rotate = inst_i[8+:4];
   //assign stall_o = stall_i; // NEEDS TO BE FIXED
+  assign branch_address_o = inst[0+:24];
   assign s_bit = inst_i[20];
   assign cond = inst_i[28+:4];
   assign U_bit = inst[23];

@@ -2,6 +2,7 @@ module fetch (
     input clk_i
   , input reset_i
   , input branch_i
+  , input [23:0] branch_address_i
   , input [31:0] pc_wb_i
   , input [31:0] data_i
   , input flush_i
@@ -10,7 +11,6 @@ module fetch (
   , output [31:0] inst_o
   , output [31:0] pc
 );
-
   reg [31:0] pc_r, pc_n;
   wire pc_plus_4;
   wire pc_plus_8;
@@ -34,11 +34,13 @@ module fetch (
     if ( stall_i )
       pc_n = pc_r;
     else if ( branch_i )   // Does Branch with Conditions
-      pc_n = pc_plus_8 + { {6{branch_i[23]}}, branch_i, 2'b0 };
+      pc_n = pc_r + 8 + { {6{branch_address_i[23]}}, branch_address_i, 2'b0 };
     else if ( pc_wb_i ) // if writing to register 15, needs to write to PC as well
       pc_n = data_i;
-    else // Normal Increment
-      pc_n = pc_plus_4;
+    else if ( pc_r >= 100 )// Normal Increment
+      pc_n = 0;
+    else
+      pc_n = pc_r + 4;
   end
 
   always @(posedge clk_i)
