@@ -38,7 +38,7 @@ module execute (
   wire [3:0] cond;
   reg [31:0] ALU_data;
   wire do_write;
-  wire ALU_opcode;
+  wire [3:0] ALU_opcode;
   wire U_bit;
   wire cond_met;
 
