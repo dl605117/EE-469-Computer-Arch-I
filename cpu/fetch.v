@@ -8,7 +8,7 @@ module fetch (
   , input wire flush_i
   , input wire stall_i
   , output reg valid_o
-  , output reg [31:0] inst_o
+  , output wire [31:0] inst_o
   , output wire [31:0] pc
 );
   reg [31:0] pc_r, pc_n;

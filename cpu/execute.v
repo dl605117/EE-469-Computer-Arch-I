@@ -15,11 +15,11 @@ module execute (
   , input wire stall_i
   , output reg [31:0] inst_o
   , output reg [31:0] ALU_data_o
-  , output reg [31:0] CPSR_o
+  , output wire [31:0] CPSR_o
   , output wire stall_o
   , output reg valid_o
-  , output wire flush_o
-  , output wire branch_o
+  , output reg flush_o
+  , output reg branch_o
   , output wire [23:0] branch_address_o
   , output reg [3:0] rd_addr_o
   , output reg do_write_o
@@ -33,11 +33,11 @@ module execute (
   wire [31:0] operand2;
   wire s_bit;
   reg [3:0] update_flags;
-  wire [31:0] r1;
-  wire [31:0] r2;
+  reg [31:0] r1;
+  reg [31:0] r2;
   wire [3:0] cond;
-  reg [31:0] ALU_data;
-  wire do_write;
+  wire [31:0] ALU_data;
+  reg do_write;
   wire [3:0] ALU_opcode;
   wire U_bit;
   wire cond_met;
@@ -187,7 +187,7 @@ module execute (
   // ************************************
   // ************** Stalling ************
   // ************************************
-  wire stall;
+  reg stall;
   wire [3:0] instruction_codes_old;
   assign instruction_codes_old = inst_o[25+:3];
   always @(*) begin

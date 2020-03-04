@@ -10,8 +10,8 @@ module decode_reg_r (
   , input wire wb_en_i
   , input wire stall_i
   , output reg valid_o
-  , output reg [31:0] r1_o
-  , output reg [31:0] r2_o
+  , output wire [31:0] r1_o
+  , output wire [31:0] r2_o
   , output reg [31:0] inst_o
   , output reg [3:0] r1_addr_o
   , output reg [3:0] r2_addr_o
@@ -22,7 +22,7 @@ module decode_reg_r (
   wire [3:0] rn_address;
   wire [3:0] rm_address;
   wire [3:0] rd_address;
-  wire [3:0] r1_address;
+  reg [3:0] r1_address;
   wire [3:0] r2_address;
   wire [2:0] instruction_codes;
 
