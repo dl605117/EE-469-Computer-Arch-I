@@ -105,7 +105,8 @@ module execute (
 
   //////////////// ALU ////////////////
   ALU ALU_module (
-      .instruction_codes( inst_i )
+      .clk_i( clk_i )
+    , .instruction_codes( inst_i )
     , .reset_i(reset_i)
     , .opcode( ALU_opcode )
     , .a( r2_ALU )

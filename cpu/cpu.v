@@ -16,7 +16,8 @@ module cpu(
   // ************************************
   // check stall and flush
 
-  reg reset;
+  wire reset;
+  assign reset = nreset;
 
   wire [31:0] wb_data;
   wire [3:0] wb_addr;
@@ -64,6 +65,7 @@ module cpu(
     , .flush_o( flush_decode_to_flush )
   );
 
+  wire stall_exec_to_decode;
   wire flush_exec_to_decode;
   wire valid_rm_to_exec;
   wire r1_rm_to_exec;
@@ -87,11 +89,11 @@ module cpu(
     , .wb_addr_i( wb_addr )
     , .wb_en_i( wb_en )
     , .valid_i( valid_mem_to_exec )
-    , .flush_i()
+    , .flush_i( flush_mem_to_exec )
     , .inst_o( inst_exec_to_mem )
     , .ALU_data_o( alu_data_exec )
     , .CPSR_o( CPSR )
-    , .stall_o( stall_exec_to_rm )
+    , .stall_o( stall_exec_to_decode )
     , .valid_o( valid_exec_to_mem )
     , .flush_o( flush_mem_to_exec )
     , .branch_o( branch )
@@ -115,7 +117,7 @@ module cpu(
     , .inst_i( inst_exec_to_mem )
     , .valid_i( valid_exec_to_mem )
     , .flush_i( flush_wb_to_mem )
-    , .do_write_i( do_write_exec_to_mem )
+    , .do_write_i( do_write_exec_to_mem  )
     , .ALU_data_o( alu_data_mem )
     , .mem_data_o( mem_data_mem_to_wb )
     , .wb_addr_o( wb_addr_mem_to_wb ) // write back address for register file
@@ -151,13 +153,13 @@ module cpu(
   assign led = 1'b0;
 
   // These are how you communicate back to the serial port debugger.
-  assign debug_port1 = pc_r[0+:8];
-  assign debug_port2 = r1_preshift[31:24];
-  assign debug_port3 = r2[0+:8];
-  assign debug_port4 = operand2[0+:8];
-  assign debug_port5 = data[31:24];
-  assign debug_port6 = mem_data_o; //{ cond_met, 1'b0, n_flag, z_flag, 2'b0, c_flag, v_flag };
-  assign debug_port7 = mem_addr[0+:8];
+  assign debug_port1 = pc[0+:8];
+  assign debug_port2 = r1_rm_to_exec[0+:8];
+  assign debug_port3 = r2_rm_to_exec[0+:8];
+  assign debug_port4 = alu_data_exec[0+:8];
+  assign debug_port5 = mem_data_mem_to_wb[31:24];
+  assign debug_port6 = 8'b0;//mem_data_o; //{ cond_met, 1'b0, n_flag, z_flag, 2'b0, c_flag, v_flag };
+  assign debug_port7 = 8'b0;//mem_addr[0+:8];
 
 
 endmodule

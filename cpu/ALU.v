@@ -1,5 +1,6 @@
 module ALU (
-    input [2:0] instruction_codes
+    input clk_i
+  , input [2:0] instruction_codes
   , input reset_i
   , input [3:0] opcode
   , input [31:0] a, b

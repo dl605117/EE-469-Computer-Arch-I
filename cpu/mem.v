@@ -29,7 +29,7 @@ module mem (
   assign U_bit = inst[23]; // 1 = add, 0 = subtract from base
   assign flush_o = flush_i;
 
-  memory mem (  .clk_i(clk)
+  memory mem (  .clk_i(clk_i)
               , .reset_i(reset_i)
               , .data_addr_i(ALU_data_i)
               , .data_i(store_data_i)
@@ -39,7 +39,7 @@ module mem (
               );
 
   ////////// pipeline registers ///////////
-  always @(posedge clk) begin
+  always @(posedge clk_i) begin
     if(reset_i) begin
       ALU_data_o <= 0;
       wb_addr_o <= 0;
