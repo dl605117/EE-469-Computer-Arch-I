@@ -27,6 +27,9 @@ module execute (
   , output cond_met_t
   , output [2:0] instruction_codes_t
 );
+  wire branch;
+  assign branch_o = branch;
+
   assign cond_met_t = cond_met;
   assign instruction_codes_t = instruction_codes;
   /////////// Init statements /////////////
@@ -55,7 +58,7 @@ module execute (
   assign immediate = inst_i[0+:8];
   assign rotate = inst_i[8+:4];
   //assign stall_o = stall_i; // NEEDS TO BE FIXED
-  assign branch_address_o = inst[0+:24];
+  assign branch_address_o = inst_i[0+:24];
   assign s_bit = inst_i[20];
   assign cond = inst_i[28+:4];
   assign U_bit = inst[23];
@@ -133,11 +136,11 @@ module execute (
   // ************************************
   // ************ BRANCHING *************
   // ************************************
-  always @(posedge clk_i) begin
-    if ( cond_met && instruction_codes == 3'b101 )
-      branch_o = 1'b1;
+  always @(*) begin
+    if ( cond_met & (instruction_codes == 3'b101) )
+      branch = 1'b1;
     else
-      branch_o = 1'b0;
+      branch = 1'b0;
   end
 
   // ************************************

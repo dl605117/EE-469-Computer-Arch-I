@@ -21,7 +21,7 @@ module code_memory (
     { code_memory[48], code_memory[49], code_memory[50], code_memory[51] } <= 32'b0000_001_0010_1_0111_0011_0000_00000001; // sub r3, r7, #1
     { code_memory[52], code_memory[53], code_memory[54], code_memory[55] } <= 32'b0000_000_0100_1_0010_0000_00000_00_0_0001; // add r0, r1, r2
     { code_memory[56], code_memory[57], code_memory[58], code_memory[59] } <= 32'b0000_101_1_00000000_00000000_00000000; // blEQ 0x4
-    { code_memory[60], code_memory[61], code_memory[62], code_memory[63] } <= 32'b1110_101_1_11111111_11111111_11101111; // blAL 0x4
+    { code_memory[60], code_memory[61], code_memory[62], code_memory[63] } <= 32'b1110_101_1_11111111_11111111_11110001; // blAL 0x4
     { code_memory[64], code_memory[65], code_memory[66], code_memory[67] } <= 32'b0000_001_0010_0_0111_0011_0000_00000001; // sub r3, r7, #1  // Will not reach
   end
   /*initial begin

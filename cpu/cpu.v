@@ -123,7 +123,6 @@ module cpu(
     , .rd_addr_o( rd_addr_exec_to_mem )
     , .do_write_o( do_write_exec_to_mem )
     , .rd_data_o( rd_data_exec_to_mem )
-    , .branch_address_o( branch_address )
     , .cond_met_t( cond_met )
     , .instruction_codes_t( inst_codes_test )
   );
