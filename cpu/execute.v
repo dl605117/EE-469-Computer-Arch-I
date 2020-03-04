@@ -20,6 +20,7 @@ module execute (
   , output reg valid_o
   , output wire flush_o
   , output wire branch_o
+  , output wire [23:0] branch_address_o
   , output reg [3:0] rd_addr_o
   , output reg do_write_o
   , output reg [31:0] rd_data_o

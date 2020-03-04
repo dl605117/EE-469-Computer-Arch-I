@@ -119,6 +119,7 @@ module cpu(
     , .valid_o( valid_exec_to_mem )
     , .flush_o( flush_exec_to_decode )
     , .branch_o( branch )
+    , .branch_address_o (branch_address)
     , .rd_addr_o( rd_addr_exec_to_mem )
     , .do_write_o( do_write_exec_to_mem )
     , .rd_data_o( rd_data_exec_to_mem )
