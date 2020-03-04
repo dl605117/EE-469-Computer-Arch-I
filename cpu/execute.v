@@ -115,7 +115,7 @@ module execute (
     , .b( r1_ALU )
     , .cond( cond )
     , .s_bit( s_bit )
-    , .data( ALU_data )
+    , .ALU_data( ALU_data )
     , .CPSR( CPSR_o )
     , .cond_met( cond_met )
   );
