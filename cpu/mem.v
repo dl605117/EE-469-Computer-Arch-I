@@ -18,15 +18,13 @@ module mem (
 
   /////////// wire/reg  ///////////
   wire r_not_w;
-  wire U_bit;
+  wire [2:0] wb_addr;
 
 
   /////////// assign ///////////
   assign wb_addr = inst_i[15:12];
   assign instruction_codes = inst_i[25+:3];
-  assign s_bit = inst[20];
   assign r_not_w = ~(instruction_codes == 3'b010 && ~s_bit);
-  assign U_bit = inst[23]; // 1 = add, 0 = subtract from base
   assign flush_o = flush_i;
 
   memory mem (  .clk_i(clk_i)

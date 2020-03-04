@@ -27,7 +27,7 @@ assign b_temp = ~b;
       4'b1100: data = a | b;          //orr
       4'b1101: data = b;                //move, need to check, it says operand2 which is 12 bits long
       4'b1110: data = ~a & b;         //bit clear
-      4'b1111: data = 8'hFFFFFFFF ^ b;   //move not
+      4'b1111: data = 32'hFFFFFFFF ^ b;   //move not
       default: data = 32'b0;                       // not sure
     endcase
   end

@@ -76,6 +76,8 @@ module cpu(
   wire [3:0] rd_addr_rm_to_exec;
   wire [31:0] instr_rm_to_exec;
   wire stall_exec_to_rm;
+  wire [31:0] CPSR;
+  wire do_write_exec_to_mem;
 
   execute execute_module (
       .clk_i( clk )

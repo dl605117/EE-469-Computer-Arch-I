@@ -24,10 +24,12 @@ module decode_reg_r (
   wire [3:0] rd_address;
   wire [3:0] r1_address;
   wire [3:0] r2_address;
+  wire [2:0] instruction_codes;
 
   assign rn_address = inst_i[16+:4];
   assign rm_address = inst_i[0+:4];
   assign rd_address = inst_i[12+:4];
+  assign instruction_codes = inst_i[27:25];
 
   // ************************************
   // ***** Register File Addressing *****
