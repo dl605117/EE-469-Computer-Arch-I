@@ -17,13 +17,14 @@ module cpu(
   // check stall and flush
 
   wire reset;
-
+  assign reset = 1'b0;
 
   wire [31:0] wb_data;
   wire [3:0] wb_addr;
   wire wb_en;
 
   wire branch;
+  wire [23:0] branch_address;
   wire [31:0] pc_wb, pc;
   wire [31:0] inst_fetch_to_decode;
   wire valid_fetch_to_decode;
@@ -61,6 +62,7 @@ module cpu(
       .clk_i( clk )
     , .reset_i( reset )
     , .branch_i( branch )
+    , .branch_address_i( branch_address )
     , .pc_wb_i( pc_wb )
     , .data_i( wb_data )
     , .flush_i( flush_decode_to_flush )
@@ -120,6 +122,7 @@ module cpu(
     , .rd_addr_o( rd_addr_exec_to_mem )
     , .do_write_o( do_write_exec_to_mem )
     , .rd_data_o( rd_data_exec_to_mem )
+    , .branch_address_o( branch_address )
   );
 
 
@@ -167,8 +170,8 @@ module cpu(
   assign debug_port3 = r2_rm_to_exec[0+:8];
   assign debug_port4 = alu_data_exec[0+:8];
   assign debug_port5 = mem_data_mem_to_wb[31:24];
-  assign debug_port6 = 8'b0;//mem_data_o; //{ cond_met, 1'b0, n_flag, z_flag, 2'b0, c_flag, v_flag };
-  assign debug_port7 = 8'b0;//mem_addr[0+:8];
+  assign debug_port6 = {3'b0, branch, pc_wb, reset, flush_decode_to_flush, stall_decode_to_fetch, valid_fetch_to_decode};//mem_data_o; //{ cond_met, 1'b0, n_flag, z_flag, 2'b0, c_flag, v_flag };
+  assign debug_port7 = inst_fetch_to_decode;//mem_addr[0+:8];
 
 
 endmodule

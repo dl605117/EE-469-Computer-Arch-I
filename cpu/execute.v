@@ -50,6 +50,7 @@ module execute (
   assign immediate = inst_i[0+:8];
   assign rotate = inst_i[8+:4];
   //assign stall_o = stall_i; // NEEDS TO BE FIXED
+  assign branch_address_o = inst[0+:24];
   assign s_bit = inst_i[20];
   assign cond = inst_i[28+:4];
   assign U_bit = inst[23];
