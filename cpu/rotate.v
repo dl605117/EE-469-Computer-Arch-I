@@ -1,6 +1,6 @@
-module rotate ( input [3:0] rotate_i
-        , input [7:0] immediate_i
-        , output [31:0] operand2 );
+module rotate ( input wire [3:0] rotate_i
+        , input wire [7:0] immediate_i
+        , output wire [31:0] operand2 );
 
   wire [39:0] number_rotate;
   assign number_rotate = { immediate_i, 24'b0, immediate_i };

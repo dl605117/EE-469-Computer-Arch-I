@@ -1,28 +1,28 @@
 module execute (
-    input clk_i
-  , input reset_i
-  , input [31:0] r1_i
-  , input [31:0] r2_i
-  , input [3:0] r1_addr_i
-  , input [3:0] r2_addr_i
-  , input [3:0] rd_addr_i
-  , input [31:0] inst_i
-  , input [31:0] wb_data_i
-  , input [3:0] wb_addr_i
-  , input wb_en_i
-  , input valid_i
-  , input flush_i
-  , input stall_i
-  , output [31:0] inst_o
-  , output [31:0] ALU_data_o
-  , output [31:0] CPSR_o
-  , output stall_o
-  , output valid_o
-  , output flush_o
-  , output branch_o
-  , output [3:0] rd_addr_o
-  , output do_write_o
-  , output [31:0] rd_data_o
+    input wire clk_i
+  , input wire reset_i
+  , input wire [31:0] r1_i
+  , input wire [31:0] r2_i
+  , input wire [3:0] r1_addr_i
+  , input wire [3:0] r2_addr_i
+  , input wire [3:0] rd_addr_i
+  , input wire [31:0] inst_i
+  , input wire [31:0] wb_data_i
+  , input wire [3:0] wb_addr_i
+  , input wire wb_en_i
+  , input wire valid_i
+  , input wire flush_i
+  , input wire stall_i
+  , output reg [31:0] inst_o
+  , output reg [31:0] ALU_data_o
+  , output reg [31:0] CPSR_o
+  , output wire stall_o
+  , output reg valid_o
+  , output wire flush_o
+  , output wire branch_o
+  , output reg [3:0] rd_addr_o
+  , output reg do_write_o
+  , output reg [31:0] rd_data_o
 );
   /////////// Init statements /////////////
   wire [3:0] opcode;
@@ -32,7 +32,6 @@ module execute (
   wire [31:0] operand2;
   wire s_bit;
   reg [3:0] update_flags;
-  reg flush_o;
   wire [31:0] r1;
   wire [31:0] r2;
   wire [3:0] cond;
@@ -41,6 +40,9 @@ module execute (
   wire [3:0] ALU_opcode;
   wire U_bit;
   wire cond_met;
+  wire [31:0] r1_shift;
+  wire [31:0] r1_ALU;
+  wire [31:0] r2_ALU;
 
   /////////// Assign statements ///////////
   assign opcode = inst_i[21+:4];
@@ -153,9 +155,7 @@ module execute (
   // ************************************
   // ********* r1(rm) selection *********
   // ************************************
-  wire [31:0] r1_shift;
-  wire [31:0] r1_ALU;
-  wire [31:0] r2_ALU;
+
   rotate rot ( rotate, immediate, operand2 );
   shifter shifting (  .inst_i(inst_i[11:5])
                     , .r1_i(r1)

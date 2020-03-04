@@ -1,14 +1,14 @@
 module fetch (
-    input clk_i
-  , input reset_i
-  , input branch_i
-  , input [31:0] pc_wb_i
-  , input [31:0] data_i
-  , input flush_i
-  , input stall_i
-  , output valid_o
-  , output [31:0] inst_o
-  , output [31:0] pc
+    input wire clk_i
+  , input wire reset_i
+  , input wire branch_i
+  , input wire [31:0] pc_wb_i
+  , input wire [31:0] data_i
+  , input wire flush_i
+  , input wire stall_i
+  , output reg valid_o
+  , output reg [31:0] inst_o
+  , output wire [31:0] pc
 );
 
   reg [31:0] pc_r, pc_n;

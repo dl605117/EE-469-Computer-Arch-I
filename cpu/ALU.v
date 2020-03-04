@@ -1,14 +1,14 @@
 module ALU (
-    input clk_i
-  , input [2:0] instruction_codes
-  , input reset_i
-  , input [3:0] opcode
-  , input [31:0] a, b
-  , input [3:0] cond
-  , input s_bit
-  , output [31:0] ALU_data
-  , output [31:0] CPSR
-  , output cond_met
+    input wire clk_i
+  , input wire [2:0] instruction_codes
+  , input wire reset_i
+  , input wire [3:0] opcode
+  , input wire [31:0] a, b
+  , input wire [3:0] cond
+  , input wire s_bit
+  , output wire [31:0] ALU_data
+  , output wire [31:0] CPSR
+  , output wire cond_met
 );
 wire [32:0] data;
 assign ALU_data = data[0+:32];

@@ -1,12 +1,13 @@
-module register_file( input clk_i
-      , input reset_i
-      , input [3:0] r1_addr_i
-      , input [3:0] r2_addr_i
-      , input wr_en_i
-      , input [3:0] wr_addr_i
-      , input [31:0] data_i
-      , input [31:0] pc
-      , output [31:0] r1_o, r2_o );
+module register_file(
+        input wire clk_i
+      , input wire reset_i
+      , input wire [3:0] r1_addr_i
+      , input wire [3:0] r2_addr_i
+      , input wire wr_en_i
+      , input wire [3:0] wr_addr_i
+      , input wire [31:0] data_i
+      , input wire [31:0] pc
+      , output reg [31:0] r1_o, r2_o );
 
   reg [31:0] registers [15:0];
 
