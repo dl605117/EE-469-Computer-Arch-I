@@ -26,6 +26,37 @@ module cpu(
   wire branch;
   wire [23:0] branch_address;
   wire [31:0] pc_wb, pc;
+  wire [31:0] inst_fetch_to_decode;
+  wire valid_fetch_to_decode;
+  wire flush_decode_to_flush;
+  wire stall_decode_to_fetch;
+  wire stall_exec_to_decode;
+  wire flush_exec_to_decode;
+  wire valid_rm_to_exec;
+  wire [31:0] r1_rm_to_exec;
+  wire [31:0] r2_rm_to_exec;
+  wire [3:0] r1_addr_rm_to_exec;
+  wire [3:0] r2_addr_rm_to_exec;
+  wire [3:0] rd_addr_rm_to_exec;
+  wire [31:0] instr_rm_to_exec;
+  wire stall_exec_to_rm;
+  wire [31:0] CPSR;
+  wire do_write_exec_to_mem;
+  wire [31:0] alu_data_exec;
+  wire valid_exec_to_mem;
+  wire flush_mem_to_exec;
+  wire [3:0] rd_addr_exec_to_mem;
+  wire [31:0] inst_exec_to_mem;
+  wire [31:0] rd_data_exec_to_mem;
+  wire flush_wb_to_mem;
+  wire [31:0] alu_data_mem;
+  wire [31:0] mem_data_mem_to_wb;
+  wire [3:0] wb_addr_mem_to_wb;
+  wire valid_mem_to_wb;
+  wire load_mem_wb;
+  wire do_write_mem_to_wb;
+
+  assign reset = 1'b0;
 
   fetch fetch_module (
       .clk_i( clk )
@@ -41,10 +72,7 @@ module cpu(
     , .pc( pc )
   );
 
-  wire [31:0] inst_fetch_to_decode;
-  wire valid_fetch_to_decode;
-  wire flush_decode_to_flush;
-  wire stall_decode_to_fetch;
+
 
   decode_reg_r decode_module (
       .clk_i( clk )
@@ -68,18 +96,7 @@ module cpu(
     , .flush_o( flush_decode_to_flush )
   );
 
-  wire stall_exec_to_decode;
-  wire flush_exec_to_decode;
-  wire valid_rm_to_exec;
-  wire [31:0] r1_rm_to_exec;
-  wire [31:0] r2_rm_to_exec;
-  wire [3:0] r1_addr_rm_to_exec;
-  wire [3:0] r2_addr_rm_to_exec;
-  wire [3:0] rd_addr_rm_to_exec;
-  wire [31:0] instr_rm_to_exec;
-  wire stall_exec_to_rm;
-  wire [31:0] CPSR;
-  wire do_write_exec_to_mem;
+
 
   execute execute_module (
       .clk_i( clk )
@@ -108,13 +125,7 @@ module cpu(
     , .branch_address_o( branch_address )
   );
 
-  wire [31:0] alu_data_exec;
-  wire valid_exec_to_mem;
-  wire flush_mem_to_exec;
-  wire [3:0] rd_addr_exec_to_mem;
-  wire do_write_exec_to_mem;
-  wire [31:0] inst_exec_to_mem;
-  wire [31:0] rd_data_exec_to_mem;
+
 
   mem memory_module (
       .clk_i( clk )
@@ -134,13 +145,7 @@ module cpu(
     , .flush_o( flush_mem_to_exec )
   );
 
-  wire flush_wb_to_mem;
-  wire [31:0] alu_data_mem;
-  wire [31:0] mem_data_mem_to_wb;
-  wire [3:0] wb_addr_mem_to_wb;
-  wire valid_mem_to_wb;
-  wire load_mem_wb;
-  wire do_write_mem_to_wb;
+
 
   write_back wb_module(
       .mem_data_i( mem_data_mem_to_wb )

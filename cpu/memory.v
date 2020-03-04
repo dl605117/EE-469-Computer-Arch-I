@@ -1,10 +1,10 @@
 module memory ( input clk_i
-  , input reset_i
-  , input [31:0] data_addr_i
-  , input [31:0] data_i
-  , input r_not_w_i
-  , input valid_i
-  , output [31:0] data_o);
+  , input wire reset_i
+  , input wire [31:0] data_addr_i
+  , input wire [31:0] data_i
+  , input wire r_not_w_i
+  , input wire valid_i
+  , output reg [31:0] data_o);
 
   reg [7:0] memory [0:11];
 

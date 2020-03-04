@@ -1,27 +1,29 @@
 module mem (
-    input clk_i
-  , input reset_i
-  , input [31:0] ALU_data_i
-  , input [31:0] store_data_i
-  , input [31:0] inst_i
-  , input valid_i
-  , input do_write_i
-  , input flush_i
-  , output [31:0] ALU_data_o
-  , output [31:0] mem_data_o
-  , output [3:0] wb_addr_o
-  , output valid_o
-  , output do_write_o
-  , output flush_o
-  , output load_o
+    input wire clk_i
+  , input wire reset_i
+  , input wire [31:0] ALU_data_i
+  , input wire [31:0] store_data_i
+  , input wire [31:0] inst_i
+  , input wire valid_i
+  , input wire do_write_i
+  , input wire flush_i
+  , output reg [31:0] ALU_data_o
+  , output wire [31:0] mem_data_o
+  , output reg [3:0] wb_addr_o
+  , output reg valid_o
+  , output reg do_write_o
+  , output wire flush_o
+  , output reg load_o
 );
 
   /////////// wire/reg  ///////////
   wire r_not_w;
   wire [2:0] wb_addr;
+  wire s_bit;
 
 
   /////////// assign ///////////
+  assign s_bit = inst_i[20];
   assign wb_addr = inst_i[15:12];
   assign instruction_codes = inst_i[25+:3];
   assign r_not_w = ~(instruction_codes == 3'b010 && ~s_bit);

@@ -1,9 +1,9 @@
 module code_memory (
-    input clk
-  , input [31:0] pc_i
-  , output [31:0] inst
+    input wire clk
+  , input wire [31:0] pc_i
+  , output reg [31:0] inst
 );
-  wire [7:0] code_memory [0:67];
+  reg [7:0] code_memory [0:67];
 
   initial begin
     { code_memory[0], code_memory[1], code_memory[2], code_memory[3] } <= 32'b0000_000_0100_1_0010_0000_00000_00_0_0001; // add r0, r1, r2

@@ -1,6 +1,6 @@
-module shifter ( input [6:0] inst_i
-  , input signed [31:0] r1_i
-  , output [31:0] r1_shift_o
+module shifter ( input wire [6:0] inst_i
+  , input wire  signed [31:0] r1_i
+  , output wire [31:0] r1_shift_o
   );
 
   wire [4:0] shift_imm;

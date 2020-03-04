@@ -1,23 +1,23 @@
 module decode_reg_r (
-    input clk_i
-  , input reset_i
-  , input [31:0] pc_i
-  , input [31:0] inst_i
-  , input valid_i
-  , input flush_i
-  , input [31:0] wb_data_i
-  , input [3:0] wb_addr_i
-  , input wb_en_i
-  , input stall_i
-  , output valid_o
-  , output [31:0] r1_o
-  , output [31:0] r2_o
-  , output [31:0] inst_o
-  , output [3:0] r1_addr_o
-  , output [3:0] r2_addr_o
-  , output [3:0] rd_addr_o
-  , output stall_o
-  , output flush_o
+    input wire clk_i
+  , input wire reset_i
+  , input wire [31:0] pc_i
+  , input wire [31:0] inst_i
+  , input wire valid_i
+  , input wire flush_i
+  , input wire [31:0] wb_data_i
+  , input wire [3:0] wb_addr_i
+  , input wire wb_en_i
+  , input wire stall_i
+  , output reg valid_o
+  , output reg [31:0] r1_o
+  , output reg [31:0] r2_o
+  , output reg [31:0] inst_o
+  , output reg [3:0] r1_addr_o
+  , output reg [3:0] r2_addr_o
+  , output reg [3:0] rd_addr_o
+  , output wire stall_o
+  , output wire flush_o
 );
   wire [3:0] rn_address;
   wire [3:0] rm_address;
