@@ -23,7 +23,8 @@ module cpu(
   wire [3:0] wb_addr;
   wire wb_en;
 
-  wire branch, pc_wb, pc;
+  wire branch;
+  wire [31:0] pc_wb, pc;
 
   fetch fetch_module (
       .clk_i( clk )
@@ -38,7 +39,7 @@ module cpu(
     , .pc( pc )
   );
 
-  wire inst_fetch_to_decode;
+  wire [31:0] inst_fetch_to_decode;
   wire valid_fetch_to_decode;
   wire flush_decode_to_flush;
   wire stall_decode_to_fetch;
@@ -68,12 +69,12 @@ module cpu(
   wire stall_exec_to_decode;
   wire flush_exec_to_decode;
   wire valid_rm_to_exec;
-  wire r1_rm_to_exec;
-  wire r2_rm_to_exec;
-  wire r1_addr_rm_to_exec;
-  wire r2_addr_rm_to_exec;
-  wire rd_addr_rm_to_exec;
-  wire instr_rm_to_exec;
+  wire [31:0] r1_rm_to_exec;
+  wire [31:0] r2_rm_to_exec;
+  wire [3:0] r1_addr_rm_to_exec;
+  wire [3:0] r2_addr_rm_to_exec;
+  wire [3:0] rd_addr_rm_to_exec;
+  wire [31:0] instr_rm_to_exec;
   wire stall_exec_to_rm;
 
   execute execute_module (
@@ -88,26 +89,26 @@ module cpu(
     , .wb_data_i( wb_data )
     , .wb_addr_i( wb_addr )
     , .wb_en_i( wb_en )
-    , .valid_i( valid_mem_to_exec )
+    , .valid_i( valid_rm_to_exec )
     , .flush_i( flush_mem_to_exec )
     , .inst_o( inst_exec_to_mem )
     , .ALU_data_o( alu_data_exec )
     , .CPSR_o( CPSR )
     , .stall_o( stall_exec_to_decode )
     , .valid_o( valid_exec_to_mem )
-    , .flush_o( flush_mem_to_exec )
+    , .flush_o( flush_exec_to_decode )
     , .branch_o( branch )
     , .rd_addr_o( rd_addr_exec_to_mem )
     , .do_write_o( do_write_exec_to_mem )
     , .rd_data_o( rd_data_exec_to_mem )
   );
 
-  wire alu_data_exec;
+  wire [31:0] alu_data_exec;
   wire valid_exec_to_mem;
   wire flush_mem_to_exec;
-  wire rd_addr_exec_to_mem;
+  wire [3:0] rd_addr_exec_to_mem;
   wire do_write_exec_to_mem;
-  wire inst_exec_to_mem;
+  wire [31:0] inst_exec_to_mem;
 
   mem memory_module (
       .clk_i( clk )
@@ -128,9 +129,9 @@ module cpu(
   );
 
   wire flush_wb_to_mem;
-  wire alu_data_mem;
-  wire mem_data_mem_to_wb;
-  wire wb_addr_mem_to_wb;
+  wire [31:0] alu_data_mem;
+  wire [31:0] mem_data_mem_to_wb;
+  wire [4:0] wb_addr_mem_to_wb;
   wire valid_mem_to_wb;
   wire load_mem_wb;
   wire do_write_mem_to_wb;
