@@ -124,9 +124,12 @@ module cpu(
     , .do_write_o( do_write_exec_to_mem )
     , .rd_data_o( rd_data_exec_to_mem )
     , .branch_address_o( branch_address )
+    , .cond_met_t( cond_met )
+    , .instruction_codes_t( inst_codes_test )
   );
 
-
+  wire cond_met;
+  wire [2:0] inst_codes_test;
 
   mem memory_module (
       .clk_i( clk )
@@ -145,8 +148,6 @@ module cpu(
     , .load_o( load_mem_wb )
     , .flush_o( flush_mem_to_exec )
   );
-
-
 
   write_back wb_module(
       .mem_data_i( mem_data_mem_to_wb )
@@ -172,7 +173,7 @@ module cpu(
   assign debug_port4 = alu_data_exec[0+:8];
   assign debug_port5 = mem_data_mem_to_wb[31:24];
   assign debug_port6 = {3'b0, branch, pc_wb, reset, flush_decode_to_flush, stall_decode_to_fetch, valid_fetch_to_decode};//mem_data_o; //{ cond_met, 1'b0, n_flag, z_flag, 2'b0, c_flag, v_flag };
-  assign debug_port7 = instr_rm_to_exec[25+:8];//mem_addr[0+:8];
+  assign debug_port7 = { 4'b0, cond_met, inst_codes_test };//mem_addr[0+:8];
 
 
 endmodule

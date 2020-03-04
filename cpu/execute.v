@@ -24,7 +24,11 @@ module execute (
   , output reg [3:0] rd_addr_o
   , output reg do_write_o
   , output reg [31:0] rd_data_o
+  , output cond_met_t
+  , output [2:0] instruction_codes_t
 );
+  assign cond_met_t = cond_met;
+  assign instruction_codes_t = instruction_codes;
   /////////// Init statements /////////////
   wire [3:0] opcode;
   wire [2:0] instruction_codes;
