@@ -34,7 +34,7 @@ module fetch (
     if ( stall_i )
       pc_n = pc_r;
     else if ( branch_i )   // Does Branch with Conditions
-      pc_n = pc_plus_8 + { {6{branch_address[23]}}, branch_address, 2'b0 };
+      pc_n = pc_plus_8 + { {6{branch_i[23]}}, branch_i, 2'b0 };
     else if ( pc_wb_i ) // if writing to register 15, needs to write to PC as well
       pc_n = data_i;
     else // Normal Increment

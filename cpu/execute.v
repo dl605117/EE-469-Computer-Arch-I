@@ -12,6 +12,7 @@ module execute (
   , input wb_en_i
   , input valid_i
   , input flush_i
+  , input stall_i
   , output [31:0] inst_o
   , output [31:0] ALU_data_o
   , output [31:0] CPSR_o
@@ -37,8 +38,9 @@ module execute (
   wire [3:0] cond;
   reg [31:0] ALU_data;
   wire do_write;
-  wire [3:0] ALU_opcode;
+  wire ALU_opcode;
   wire U_bit;
+  wire cond_met;
 
   /////////// Assign statements ///////////
   assign opcode = inst_i[21+:4];
