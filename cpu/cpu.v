@@ -166,7 +166,7 @@ module cpu(
   assign debug_port4 = alu_data_exec[0+:8];
   assign debug_port5 = mem_data_mem_to_wb[31:24];
   assign debug_port6 = {3'b0, branch, pc_wb, reset, flush_decode_to_flush, stall_decode_to_fetch, valid_fetch_to_decode};//mem_data_o; //{ cond_met, 1'b0, n_flag, z_flag, 2'b0, c_flag, v_flag };
-  assign debug_port7 = inst_fetch_to_decode;//mem_addr[0+:8];
+  assign debug_port7 = instr_rm_to_exec[25+:8];//mem_addr[0+:8];
 
 
 endmodule

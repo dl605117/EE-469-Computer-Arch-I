@@ -126,7 +126,7 @@ module execute (
   // ************************************
   // ************ BRANCHING *************
   // ************************************
-  always @(*) begin
+  always @(posedge clk_i) begin
     if ( cond_met && instruction_codes == 3'b101 )
       branch_o = 1'b1;
     else
