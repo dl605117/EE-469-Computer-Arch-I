@@ -22,7 +22,7 @@ module execute (
   , output branch_o
   , output [3:0] rd_addr_o
   , output do_write_o
-  , output rd_data_o
+  , output [31:0] rd_data_o
 );
   /////////// Init statements /////////////
   wire [3:0] opcode;
@@ -47,9 +47,10 @@ module execute (
   assign instruction_codes = inst_i[25+:3];
   assign immediate = inst_i[0+:8];
   assign rotate = inst_i[8+:4];
-  assign stall_o = stall_i; // NEEDS TO BE FIXED
+  //assign stall_o = stall_i; // NEEDS TO BE FIXED
   assign s_bit = inst_i[20];
   assign cond = inst_i[28+:4];
+  assign U_bit = inst[23];
   assign ALU_opcode = instruction_codes == 3'b010 ? U_bit ? 4'b0100 : 4'b0010 : opcode;
 
   //////////// pipeline registers ////////////
@@ -61,7 +62,7 @@ module execute (
       rd_addr_o <= 0;
       rd_data_o <= 0;
     end else begin
-      if(stall_i) begin
+      if(stall) begin
         inst_o <= inst_o;
         ALU_data_o <= ALU_data_o;
         do_write_o <= do_write_o;
@@ -109,7 +110,7 @@ module execute (
   //////////////// ALU ////////////////
   ALU ALU_module (
       .clk_i( clk_i )
-    , .instruction_codes( inst_i )
+    , .instruction_codes( instruction_codes )
     , .reset_i(reset_i)
     , .opcode( ALU_opcode )
     , .a( r2_ALU )
