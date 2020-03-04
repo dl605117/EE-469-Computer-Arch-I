@@ -30,6 +30,7 @@ module decode_reg_r (
   assign rm_address = inst_i[0+:4];
   assign rd_address = inst_i[12+:4];
   assign instruction_codes = inst_i[27:25];
+  assign flush_o = flush_i;
 
   // ************************************
   // ***** Register File Addressing *****
@@ -68,14 +69,12 @@ module decode_reg_r (
       r2_addr_o <= 0;
       rd_addr_o <= 0;
       stall_o <= 0;
-      flush_o <= 0;
     end
     else begin
       r1_addr_o <= r1_address;
       r2_addr_o <= r2_address;
       rd_addr_o <= rd_address;
       stall_o <= stall_i;
-      flush_o <= flush_i;
     end
   end
 endmodule

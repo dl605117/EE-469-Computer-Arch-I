@@ -105,17 +105,11 @@ module execute (
   end
 
   /////////// Setting Flush ////////////
-  always @(posedge clk_i) begin
-    if (reset_i) begin
-      flush_o <= 0;
-    end else begin
+  always @(*) begin
       if ( flush_i || ( cond_met && branch_o ) )
-        flush_o <= 1'b1;
-      else if (flush_o == 1'b1)
-        flush_o <= 1'b0;
+        flush_o = 1'b1;
       else
-        flush_o <= flush_i;
-    end
+        flush_o = 1'b0;
   end
 
   //////////////// ALU ////////////////
