@@ -15,7 +15,9 @@ module cpu(
   // ***** TO DOS ***********
   // ************************************
   // check stall and flush
-  // Check PC + 4
+
+  wire reset;
+  assign reset = 1'b0;
 
   wire [31:0] wb_data;
   wire [3:0] wb_addr;
@@ -23,8 +25,7 @@ module cpu(
 
   wire branch;
   wire [23:0] branch_address;
-  wire pc_wb;
-  wire [31:0] pc;
+  wire [31:0] pc_wb, pc;
   wire [31:0] inst_fetch_to_decode;
   wire valid_fetch_to_decode;
   wire flush_decode_to_flush;
@@ -55,10 +56,11 @@ module cpu(
   wire load_mem_wb;
   wire do_write_mem_to_wb;
 
+  assign reset = 1'b0;
 
   fetch fetch_module (
       .clk_i( clk )
-    , .reset_i( nreset )
+    , .reset_i( reset )
     , .branch_i( branch )
     , .branch_address_i( branch_address )
     , .pc_wb_i( pc_wb )
@@ -74,7 +76,7 @@ module cpu(
 
   decode_reg_r decode_module (
       .clk_i( clk )
-    , .reset_i( nreset )
+    , .reset_i( reset )
     , .pc_i( pc )
     , .inst_i( inst_fetch_to_decode )
     , .valid_i( valid_fetch_to_decode )
@@ -99,7 +101,7 @@ module cpu(
 
   execute execute_module (
       .clk_i( clk )
-    , .reset_i( nreset )
+    , .reset_i( reset )
     , .r1_i( r1_rm_to_exec )
     , .r2_i( r2_rm_to_exec )
     , .r1_addr_i( r1_addr_rm_to_exec )
@@ -130,7 +132,7 @@ module cpu(
 
   mem memory_module (
       .clk_i( clk )
-    , .reset_i( nreset )
+    , .reset_i( reset )
     , .ALU_data_i( alu_data_exec )
     , .store_data_i( rd_data_exec_to_mem )
     , .inst_i( inst_exec_to_mem )
@@ -169,7 +171,7 @@ module cpu(
   assign debug_port3 = r2_rm_to_exec[7:0];
   assign debug_port4 = alu_data_exec[7:0];
   assign debug_port5 = inst_fetch_to_decode[19:16];
-  assign debug_port6 = {4'b0, branch, pc_wb, flush_decode_to_flush, stall_decode_to_fetch, valid_fetch_to_decode};//mem_data_o; //{ cond_met, 1'b0, n_flag, z_flag, 2'b0, c_flag, v_flag };
+  assign debug_port6 = {3'b0, branch, pc_wb, reset, flush_decode_to_flush, stall_decode_to_fetch, valid_fetch_to_decode};//mem_data_o; //{ cond_met, 1'b0, n_flag, z_flag, 2'b0, c_flag, v_flag };
   assign debug_port7 = { 4'b0, cond_met, inst_codes_test };//mem_addr[0+:8];
 
 

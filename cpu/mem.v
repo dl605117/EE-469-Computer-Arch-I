@@ -20,6 +20,7 @@ module mem (
   wire r_not_w;
   wire [2:0] wb_addr;
   wire s_bit;
+  wire [2:0] instruction_codes;
 
 
   /////////// assign ///////////

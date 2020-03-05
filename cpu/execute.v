@@ -15,10 +15,10 @@ module execute (
   , input wire stall_i
   , output reg [31:0] inst_o
   , output reg [31:0] ALU_data_o
-  , output reg [31:0] CPSR_o
+  , output wire [31:0] CPSR_o
   , output wire stall_o
   , output reg valid_o
-  , output wire flush_o
+  , output reg flush_o
   , output wire branch_o
   , output wire [23:0] branch_address_o
   , output reg [3:0] rd_addr_o
@@ -27,11 +27,8 @@ module execute (
   , output cond_met_t
   , output [2:0] instruction_codes_t
 );
-  wire branch;
-  assign branch_o = branch;
+  reg branch;
 
-  assign cond_met_t = cond_met;
-  assign instruction_codes_t = instruction_codes;
   /////////// Init statements /////////////
   wire [3:0] opcode;
   wire [2:0] instruction_codes;
@@ -40,19 +37,25 @@ module execute (
   wire [31:0] operand2;
   wire s_bit;
   reg [3:0] update_flags;
-  wire [31:0] r1;
-  wire [31:0] r2;
+  reg [31:0] r1;
+  reg [31:0] r2;
   wire [3:0] cond;
-  reg [31:0] ALU_data;
-  wire do_write;
+  wire [31:0] ALU_data;
+  reg do_write;
   wire [3:0] ALU_opcode;
   wire U_bit;
   wire cond_met;
   wire [31:0] r1_shift;
   wire [31:0] r1_ALU;
   wire [31:0] r2_ALU;
+  reg stall;
 
   /////////// Assign statements ///////////
+  assign branch_o = branch;
+
+  assign cond_met_t = cond_met;
+  assign instruction_codes_t = instruction_codes;
+
   assign opcode = inst_i[21+:4];
   assign instruction_codes = inst_i[25+:3];
   assign immediate = inst_i[0+:8];
@@ -61,7 +64,7 @@ module execute (
   assign branch_address_o = inst_i[0+:24];
   assign s_bit = inst_i[20];
   assign cond = inst_i[28+:4];
-  assign U_bit = inst[23];
+  assign U_bit = inst_i[23];
   assign ALU_opcode = instruction_codes == 3'b010 ? U_bit ? 4'b0100 : 4'b0010 : opcode;
 
   //////////// pipeline registers ////////////
@@ -188,7 +191,7 @@ module execute (
   // ************************************
   // ************** Stalling ************
   // ************************************
-  wire stall;
+
   wire [3:0] instruction_codes_old;
   assign instruction_codes_old = inst_o[25+:3];
   always @(*) begin

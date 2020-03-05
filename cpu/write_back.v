@@ -8,7 +8,7 @@ module write_back (
   , output wire wb_en_o
   , output wire [31:0] wb_data_o
   , output wire [3:0] wb_addr_o
-  , output wire [31:0] pc_wb_o
+  , output wire pc_wb_o
   , output wire flush_o
 );
   assign wb_addr_o = wb_addr_i;

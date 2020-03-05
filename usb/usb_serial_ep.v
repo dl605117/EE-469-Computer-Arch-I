@@ -4,7 +4,7 @@ module usb_serial_ep (
 
 
   ////////////////////
-  // out endpoint interface 
+  // out endpoint interface
   ////////////////////
   output out_ep_req,
   input out_ep_grant,
@@ -17,13 +17,13 @@ module usb_serial_ep (
 
 
   ////////////////////
-  // in endpoint interface 
+  // in endpoint interface
   ////////////////////
   output reg in_ep_req = 0,
   input in_ep_grant,
   input in_ep_data_free,
   output reg in_ep_data_put = 0,
-  output [7:0] in_ep_data,
+  output reg [7:0] in_ep_data,
   output reg in_ep_data_done = 0,
   output in_ep_stall,
   input in_ep_acked,
@@ -37,7 +37,7 @@ module usb_serial_ep (
   input uart_tx_strobe,
 
   output [7:0] uart_rx_data,
-  output uart_rx_strobe
+  output reg uart_rx_strobe
 );
   // never stall the USB
   // todo: allow backpressure to stall the serial link
@@ -70,7 +70,7 @@ module usb_serial_ep (
 		uart_rx_strobe <= 1;
 	end
   end
-  
+
   // "In" from the FPGA to the Host.
   // when the host says that there is space free in the outbound
   // packet, clock in bytes from the FPGA on the uart_tx_strobe line.
