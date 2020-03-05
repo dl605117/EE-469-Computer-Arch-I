@@ -7,7 +7,7 @@ module code_memory (
 
   initial begin
     { code_memory[0], code_memory[1], code_memory[2], code_memory[3] } <= 32'b0000_000_0100_1_0010_0000_00000_00_0_0001; // add r0, r1, r2
-    { code_memory[4], code_memory[5], code_memory[6], code_memory[7] } <= 32'b0000_000_0000_1_0010_0100_00000_00_0_0010; // and r4, r1, r2
+    { code_memory[4], code_memory[5], code_memory[6], code_memory[7] } <= 32'b0000_000_0000_1_0010_0100_00000_00_0_0001; // and r4, r1, r2
     { code_memory[8], code_memory[9], code_memory[10], code_memory[11] } <= 32'b0000_000_0001_1_0010_0100_00000_00_0_0001; // xor r4, r1, r2
     { code_memory[12], code_memory[13], code_memory[14], code_memory[15] } <= 32'b0000_000_0010_1_0010_0100_00000_00_0_0001; // sub r4, r1, r2
     { code_memory[16], code_memory[17], code_memory[18], code_memory[19] } <= 32'b0000_000_0100_1_0010_0100_00000_00_0_0001; // add r4, r1, r2
