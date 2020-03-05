@@ -13,6 +13,7 @@ module execute (
   , input wire valid_i
   , input wire flush_i
   , input wire stall_i
+  , input wire [31:0] pc_i
   , output reg [31:0] inst_o
   , output reg [31:0] ALU_data_o
   , output wire [31:0] CPSR_o
@@ -27,6 +28,7 @@ module execute (
   , output cond_met_t
   , output [2:0] instruction_codes_t
 );
+
   reg branch;
 
   /////////// Init statements /////////////
@@ -148,12 +150,16 @@ module execute (
       r1 = wb_data_i;
     else if (rd_addr_o == r1_addr_i && valid_o && do_write_o)
       r1 = ALU_data_o;
+    else if (r1_addr_i == 4'b1111)
+      r1 = pc_i;
     else
       r1 = r1_i;
     if (wb_addr_i == r2_addr_i && wb_en_i)
       r2 = wb_data_i;
     else if (rd_addr_o == r2_addr_i && valid_o && do_write_o)
       r2 = ALU_data_o;
+    else if (r2_addr_i == 4'b1111)
+      r2 = pc_i;
     else
       r2 = r2_i;
   end

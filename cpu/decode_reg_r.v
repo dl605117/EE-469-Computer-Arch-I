@@ -1,7 +1,6 @@
 module decode_reg_r (
     input wire clk_i
   , input wire reset_i
-  , input wire [31:0] pc_i
   , input wire [31:0] inst_i
   , input wire valid_i
   , input wire flush_i
@@ -25,8 +24,7 @@ module decode_reg_r (
   reg [3:0] r1_address;
   wire [3:0] r2_address;
   wire [2:0] instruction_codes;
-  wire [31:0] r2;
-  assign r2_o = r2;
+
 
   assign rn_address = inst_i[19:16];
   assign rm_address = inst_i[0+:4];
@@ -52,7 +50,6 @@ module decode_reg_r (
                     , .wr_en_i(wb_en_i)
                     , .wr_addr_i(wb_addr_i)
                     , .data_i(wb_data_i)
-                    , .pc(pc_i)
                     , .a_o(r1_o)
                     , .b_o(r2_o)
                     );

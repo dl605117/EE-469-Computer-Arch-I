@@ -75,7 +75,6 @@ module cpu(
   decode_reg_r decode_module (
       .clk_i( clk )
     , .reset_i( nreset )
-    , .pc_i( pc )
     , .inst_i( inst_fetch_to_decode )
     , .valid_i( valid_fetch_to_decode )
     , .flush_i( flush_exec_to_decode )
@@ -111,6 +110,7 @@ module cpu(
     , .wb_en_i( wb_en )
     , .valid_i( valid_rm_to_exec )
     , .flush_i( flush_mem_to_exec )
+    , .pc_i( pc )
     , .inst_o( inst_exec_to_mem )
     , .ALU_data_o( alu_data_exec )
     , .CPSR_o( CPSR )
