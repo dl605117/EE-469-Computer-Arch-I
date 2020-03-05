@@ -8,9 +8,9 @@ module ALU (
   , input wire s_bit
   , output wire [31:0] ALU_data
   , output wire [31:0] CPSR
-  , output wire cond_met
+  , output reg cond_met
 );
-wire [32:0] data;
+reg [32:0] data;
 assign ALU_data = data[0+:32];
 // a = rn or r2
 // b = rm (muxed in as rm or operand2) or r1
@@ -41,7 +41,7 @@ assign b_temp = ~b;
   // b = rm (muxed in as rm or operand2) or r1
 
   reg n_flag, v_flag, z_flag, c_flag;
-  wire [3:0] update_flags;
+  reg [3:0] update_flags;
   assign CPSR = { n_flag, z_flag, c_flag, v_flag, 22'b0, 5'b11111 };
 
   // UPDATING FLAGS
