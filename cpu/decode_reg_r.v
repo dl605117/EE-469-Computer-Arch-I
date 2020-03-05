@@ -45,14 +45,14 @@ module decode_reg_r (
   end
 
   register_file rf (  .clk_i(clk_i)
-                    , .r1_addr_i(r1_address)
-                    , .r2_addr_i(r2_address)
+                    , .a_addr_i(r1_address)
+                    , .b_addr_i(r2_address)
                     , .wr_en_i(wb_en_i)
                     , .wr_addr_i(wb_addr_i)
                     , .data_i(wb_data_i)
                     , .pc(pc_i)
-                    , .r1_o(r1_o)
-                    , .r2_o(r2_o)
+                    , .a_o(r1_o)
+                    , .b_o(r2_o)
                     );
 
   always @(posedge clk_i) begin

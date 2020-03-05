@@ -1,12 +1,13 @@
 module register_file(
         input wire clk_i
-      , input wire [3:0] r1_addr_i
-      , input wire [3:0] r2_addr_i
+      , input wire [3:0] a_addr_i
+      , input wire [3:0] b_addr_i
       , input wire wr_en_i
       , input wire [3:0] wr_addr_i
       , input wire [31:0] data_i
       , input wire [31:0] pc
-      , output reg [31:0] r1_o, r2_o );
+      , output reg [31:0] a_o
+      , output reg [31:0] b_o );
 
   reg [31:0] registers [15:0];
 
@@ -20,14 +21,14 @@ module register_file(
   end
 
   always @(posedge clk_i) begin
-    if ( r1_addr_i == 4'b1111 )
-      r1_o <= pc;
+    if ( a_addr_i == 4'b1111 )
+      a_o <= pc;
     else
-      r1_o <= registers[r1_addr_i];
-    if ( r2_addr_i == 4'b1111 )
-      r2_o <= pc;
+      a_o <= registers[a_addr_i];
+    if ( b_addr_i == 4'b1111 )
+      b_o <= pc;
     else
-      r2_o <= registers[r2_addr_i];
+      b_o <= registers[b_addr_i];
     if ( wr_en_i ) begin
       registers[wr_addr_i] <= data_i;
     end

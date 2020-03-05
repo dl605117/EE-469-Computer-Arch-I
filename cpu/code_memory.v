@@ -5,9 +5,9 @@ module code_memory (
 );
   reg [7:0] code_memory [0:67];
 
-  /*initial begin
+  initial begin
     { code_memory[0], code_memory[1], code_memory[2], code_memory[3] } <= 32'b0000_000_0100_1_0010_0000_00000_00_0_0001; // add r0, r1, r2
-    { code_memory[4], code_memory[5], code_memory[6], code_memory[7] } <= 32'b0000_000_0000_1_0010_0100_00000_00_0_0001; // and r4, r1, r2
+    { code_memory[4], code_memory[5], code_memory[6], code_memory[7] } <= 32'b0000_000_0000_1_0010_0100_00000_00_0_0010; // and r4, r1, r2
     { code_memory[8], code_memory[9], code_memory[10], code_memory[11] } <= 32'b0000_000_0001_1_0010_0100_00000_00_0_0001; // xor r4, r1, r2
     { code_memory[12], code_memory[13], code_memory[14], code_memory[15] } <= 32'b0000_000_0010_1_0010_0100_00000_00_0_0001; // sub r4, r1, r2
     { code_memory[16], code_memory[17], code_memory[18], code_memory[19] } <= 32'b0000_000_0100_1_0010_0100_00000_00_0_0001; // add r4, r1, r2
@@ -23,7 +23,7 @@ module code_memory (
     { code_memory[56], code_memory[57], code_memory[58], code_memory[59] } <= 32'b0000_101_1_00000000_00000000_00000000; // blEQ 0x4
     { code_memory[60], code_memory[61], code_memory[62], code_memory[63] } <= 32'b1110_101_1_11111111_11111111_11110001; // blAL 0x4
     { code_memory[64], code_memory[65], code_memory[66], code_memory[67] } <= 32'b0000_001_0010_0_0111_0011_0000_00000001; // sub r3, r7, #1  // Will not reach
-  end*/
+  end/*
   initial begin
     { code_memory[0], code_memory[1], code_memory[2], code_memory[3] } <= 32'b1110_000_0100_1_0011_0100_00001_00_0_0001; // add r4, r1, r2
     { code_memory[4], code_memory[5], code_memory[6], code_memory[7] } <= 32'b1110_000_0000_1_0001_0100_00000_00_0_0001; // and r4, r1, r2
@@ -42,7 +42,7 @@ module code_memory (
     { code_memory[56], code_memory[57], code_memory[58], code_memory[59] } <= 32'b0000_101_1_00000000_00000000_00000000; // blEQ 0x4
     { code_memory[60], code_memory[61], code_memory[62], code_memory[63] } <= 32'b1110_101_1_11111111_11111111_11110001; // blAL 0x4
     { code_memory[64], code_memory[65], code_memory[66], code_memory[67] } <= 32'b0000_001_0010_0_0111_0011_0000_00000001; // sub r3, r7, #1  // Will not reach
-  end
+  end*/
 
   always @(posedge clk)
     inst <= { code_memory[pc_i], code_memory[pc_i+1], code_memory[pc_i+2], code_memory[pc_i+3] };
