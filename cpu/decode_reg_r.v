@@ -25,6 +25,8 @@ module decode_reg_r (
   wire [3:0] r1_address;
   wire [3:0] r2_address;
   wire [2:0] instruction_codes;
+  wire [31:0] r2;
+  assign r2_o = r2;
 
   assign rn_address = inst_i[16+:4];
   assign rm_address = inst_i[0+:4];
@@ -52,7 +54,7 @@ module decode_reg_r (
                     , .data_i(wb_data_i)
                     , .pc(pc_i)
                     , .r1_o(r1_o)
-                    , .r2_o(r2_o)
+                    , .r2_o(r2)
                     );
 
   always @(posedge clk_i) begin

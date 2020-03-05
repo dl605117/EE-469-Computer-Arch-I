@@ -15,6 +15,7 @@ module cpu(
   // ***** TO DOS ***********
   // ************************************
   // check stall and flush
+  // Check PC + 4
 
   wire reset;
   assign reset = 1'b0;
