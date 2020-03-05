@@ -99,8 +99,8 @@ module top (
     .usb_tx_en(usb_tx_en)
   );
 
-  // Generate the slow speed clock
-  localparam slow_clock_size = 24;
+  // Generate the slow speed clock //23 default
+  localparam slow_clock_size = 27;
   reg [slow_clock_size:0]  slow_clock;
   wire clk_a1hz;
   always @(posedge clk_48mhz) slow_clock <= slow_clock + 1;

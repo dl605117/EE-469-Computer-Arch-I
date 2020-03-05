@@ -15,6 +15,7 @@ module cpu(
   // ***** TO DOS ***********
   // ************************************
   // check stall and flush
+  // Check PC + 4
 
   wire [31:0] wb_data;
   wire [3:0] wb_addr;

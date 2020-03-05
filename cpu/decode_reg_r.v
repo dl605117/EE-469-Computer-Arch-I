@@ -25,6 +25,8 @@ module decode_reg_r (
   reg [3:0] r1_address;
   wire [3:0] r2_address;
   wire [2:0] instruction_codes;
+  wire [31:0] r2;
+  assign r2_o = r2;
 
   assign rn_address = inst_i[19:16];
   assign rm_address = inst_i[0+:4];
