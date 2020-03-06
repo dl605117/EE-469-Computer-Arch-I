@@ -12,6 +12,7 @@ module execute (
   , input wire wb_en_i
   , input wire valid_i
   , input wire flush_i
+  , input wire stall_i
   , input wire [31:0] pc_i
   , output reg [31:0] inst_o
   , output reg [31:0] ALU_data_o
@@ -26,8 +27,6 @@ module execute (
   , output reg [31:0] rd_data_o
   , output cond_met_t
   , output [2:0] instruction_codes_t
-  , output [2:0] counting_stalls
-  , output r_not_w
 );
 
   reg branch;
@@ -69,7 +68,6 @@ module execute (
   assign cond = inst_i[28+:4];
   assign U_bit = inst_i[23];
   assign ALU_opcode = instruction_codes == 3'b010 ? U_bit ? 4'b0100 : 4'b0010 : opcode;
-  assign r_not_w = ~(instruction_codes == 3'b010 & ~s_bit);
 
   //////////// pipeline registers ////////////
   always @(posedge clk_i) begin
@@ -91,7 +89,7 @@ module execute (
         ALU_data_o <= ALU_data;
         do_write_o <= do_write;
         rd_addr_o <= rd_addr_i;
-        rd_data_o <= r1;
+        rd_data_o <= r1_i;
       end
     end
   end
@@ -199,41 +197,40 @@ module execute (
   // ************************************
   // ************** Stalling ************
   // ************************************
-	//reg counting_stalls;
-	//reg counting_stalls_in;
-	wire [3:0] instruction_codes_old;
+
+  wire [3:0] instruction_codes_old;
   assign instruction_codes_old = inst_o[25+:3];
-	
-	
-	reg [2:0] counting_stalls_r;
-	reg [2:0] counting_stalls_n;
-	assign counting_stalls = counting_stalls_r;
-	
-	always @(*)
-		if ( stall )
-			counting_stalls_n = counting_stalls_r + 1;
-		else
-			counting_stalls_n = 3'b0;
-	
-	always @(posedge clk_i)
-		if ( reset_i ) 
-			counting_stalls_r <= 3'b0;
-		else
-			counting_stalls_r <= counting_stalls_n;
-  
-  
   always @(*) begin
-    if (instruction_codes_old == 3'b010)
-      if(instruction_codes == 3'b000)
-        stall = (r1_addr_i == rd_addr_o | r2_addr_i == rd_addr_o );
-      else if (instruction_codes == 3'b001)
-        stall = (r2_addr_i == rd_addr_o);
-      else
+    if (instruction_codes_old == 3'b010) begin
+      if(instruction_codes == 3'b000) begin
+        stall = (r1_addr_i == rd_addr_o || r2_addr_i == rd_addr_o ) & counting_stalls;
+      end else if (instruction_codes == 3'b001) begin
+        stall = r2_addr_i == rd_addr_o & counting_stalls;
+      end else
         stall = 0;
-    else
+    end else
       stall = 0;
   end
-  assign stall_o = ( counting_stalls_n != 3'b111 && counting_stalls_n != 3'b00 );
-  
+  assign stall_o = stall;
+  reg counting_stalls;
+/*
+  reg counting_stalls_r;
+  reg counting_stalls_n;
+
+  always @(*) begin
+    if ( stall )
+    counting_stalls_n = counting_stalls_r + 1;*/
+
+  always @(posedge clk_i) begin
+    if (instruction_codes_old == 3'b010)
+      if(instruction_codes == 3'b000)
+        if (r1_addr_i == rd_addr_o || r2_addr_i == rd_addr_o )
+          counting_stalls = counting_stalls + 1;
+      else if (instruction_codes == 3'b001)
+        if ( r2_addr_i == rd_addr_o )
+          counting_stalls = counting_stalls + 1;
+    else
+      counting_stalls = 0;
+  end
 
 endmodule

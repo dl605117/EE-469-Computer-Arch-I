@@ -16,6 +16,11 @@ module cpu(
   // ************************************
   // check stall and flush
   // Check PC + 4
+  // valid after branch needs to be fixed
+  // add after load takes forever / stall takes a while
+  //    stall lasts forever, need to figure out how to stop it.
+
+  wire reset = 1'b0;
 
   wire [31:0] wb_data;
   wire [3:0] wb_addr;
@@ -58,13 +63,13 @@ module cpu(
 
   fetch fetch_module (
       .clk_i( clk )
-    , .reset_i( nreset )
+    , .reset_i( reset )
     , .branch_i( branch )
     , .branch_address_i( branch_address )
     , .pc_wb_i( pc_wb )
     , .data_i( wb_data )
     , .flush_i( flush_decode_to_flush )
-    , .stall_i( stall_decode_to_fetch )
+    , .stall_i( stall_exec_to_decode )
     , .valid_o( valid_fetch_to_decode )
     , .inst_o( inst_fetch_to_decode )
     , .pc( pc )
@@ -74,7 +79,7 @@ module cpu(
 
   decode_reg_r decode_module (
       .clk_i( clk )
-    , .reset_i( nreset )
+    , .reset_i( reset )
     , .inst_i( inst_fetch_to_decode )
     , .valid_i( valid_fetch_to_decode )
     , .flush_i( flush_exec_to_decode )
@@ -95,10 +100,11 @@ module cpu(
 
   wire cond_met;
   wire [2:0] inst_codes_test;
-
+	wire [2:0] counting_stalls;
+	wire r_not_w;
   execute execute_module (
       .clk_i( clk )
-    , .reset_i( nreset )
+    , .reset_i( reset )
     , .r1_i( r1_rm_to_exec )
     , .r2_i( r2_rm_to_exec )
     , .r1_addr_i( r1_addr_rm_to_exec )
@@ -124,13 +130,15 @@ module cpu(
     , .rd_data_o( rd_data_exec_to_mem )
     , .cond_met_t( cond_met )
     , .instruction_codes_t( inst_codes_test )
+	 , .counting_stalls( counting_stalls )
+	 , .r_not_w( r_not_w )
   );
 
-
+wire [31:0] teser_reg;
 
   mem memory_module (
       .clk_i( clk )
-    , .reset_i( nreset )
+    , .reset_i( reset )
     , .ALU_data_i( alu_data_exec )
     , .store_data_i( rd_data_exec_to_mem )
     , .inst_i( inst_exec_to_mem )
@@ -144,6 +152,8 @@ module cpu(
     , .do_write_o( do_write_mem_to_wb )
     , .load_o( load_mem_wb )
     , .flush_o( flush_mem_to_exec )
+	 , .r_not_w( r_not_w )
+	 , .teser_reg( teser_reg )
   );
 
   write_back wb_module(
@@ -166,11 +176,18 @@ module cpu(
   // These are how you communicate back to the serial port debugger.
   assign debug_port1 = pc[0+:8];
   assign debug_port2 = r1_rm_to_exec[0+:8];
-  assign debug_port3 = r2_rm_to_exec[7:0];
-  assign debug_port4 = alu_data_exec[7:0];
-  assign debug_port5 = inst_fetch_to_decode[19:16];
-  assign debug_port6 = {4'b0, branch, pc_wb, flush_decode_to_flush, stall_decode_to_fetch, valid_fetch_to_decode};//mem_data_o; //{ cond_met, 1'b0, n_flag, z_flag, 2'b0, c_flag, v_flag };
-  assign debug_port7 = { 4'b0, cond_met, inst_codes_test };//mem_addr[0+:8];
+  assign debug_port3 = r2_rm_to_exec[0+:8];
+  assign debug_port4 = alu_data_exec[0+:8];
+  assign debug_port5 = teser_reg[0+:8];//rd_data_exec_to_mem[0+:8]; //inst_fetch_to_decode[19:16];
+  assign debug_port6 = { wb_en
+                        , branch
+                        , pc_wb
+                        , flush_exec_to_decode
+								, counting_stalls[0+:2]
+                        , stall_exec_to_decode
+                        , valid_fetch_to_decode
+                        };//mem_data_o; //{ cond_met, 1'b0, n_flag, z_flag, 2'b0, c_flag, v_flag };
+  assign debug_port7 = { 3'b0, r_not_w, rd_data_exec_to_mem[0+:4] };//{ r1_addr_rm_to_exec, r2_addr_rm_to_exec };//{ 4'b0, cond_met, inst_codes_test };//mem_addr[0+:8];
 
 
 endmodule

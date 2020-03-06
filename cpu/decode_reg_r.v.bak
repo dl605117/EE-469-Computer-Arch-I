@@ -26,23 +26,23 @@ module decode_reg_r (
   wire [2:0] instruction_codes;
 
 
-  assign rn_address = stall_i ? inst_o[19:16] : inst_i[19:16];
-  assign rm_address = stall_i ? inst_o[0+:4] : inst_i[0+:4];
-  assign rd_address = stall_i ? inst_o[12+:4] : inst_i[12+:4];
-  assign instruction_codes = stall_i ? inst_o[27:25] : inst_i[27:25];
+  assign rn_address = inst_i[19:16];
+  assign rm_address = inst_i[0+:4];
+  assign rd_address = inst_i[12+:4];
+  assign instruction_codes = inst_i[27:25];
   assign flush_o = flush_i;
 
   // ************************************
   // ***** Register File Addressing *****
   // ************************************
   assign r2_address = rn_address;
-  assign r1_address = instruction_codes == 3'b010 ? rd_address : rm_address;
-  /*always @(*) begin
+
+  always @(*) begin
     if ( instruction_codes == 3'b010 ) // LOAD and STORE
       r1_address = rd_address;
     else
       r1_address = rm_address;
-  end*/
+  end
 
   register_file rf (  .clk_i(clk_i)
                     , .a_addr_i(r1_address)

@@ -100,7 +100,7 @@ module top (
   );
 
   // Generate the slow speed clock //23 default
-  localparam slow_clock_size = 27;
+  localparam slow_clock_size = 23;
   reg [slow_clock_size:0]  slow_clock;
   wire clk_a1hz;
   always @(posedge clk_48mhz) slow_clock <= slow_clock + 1;

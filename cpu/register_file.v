@@ -12,9 +12,6 @@ module register_file(
 
   integer i;
   initial begin
-    //registers[0] = 32'b0;
-    //registers[1] = 32'b10000000_00000000_00000000_00000000;
-    /*registers[2] = 32'b01111111_11111111_11111111_11111111;*/
     for ( i = 0; i < 15; i=i+1 )
       registers[i] <= i;
   end
@@ -23,8 +20,16 @@ module register_file(
     a_o <= registers[a_addr_i];
     b_o <= registers[b_addr_i];
     if ( wr_en_i ) begin
-      registers[wr_addr_i] <= data_i;
-    end
+		for ( i = 0; i < 16; i = i + 1 )
+			if ( i == wr_addr_i )
+				registers[wr_addr_i] <= data_i;
+			else
+				registers[i] <= registers[i];
+	end
+		else
+			for ( i = 0; i < 16; i = i + 1 )
+				registers[i] <= registers[i];
+
   end
 
 endmodule
