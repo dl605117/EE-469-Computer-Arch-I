@@ -102,6 +102,7 @@ module cpu(
   wire [2:0] inst_codes_test;
 	wire [2:0] counting_stalls;
 	wire r_not_w;
+	wire [31:0] register_ALU;
   execute execute_module (
       .clk_i( clk )
     , .reset_i( reset )
@@ -131,10 +132,10 @@ module cpu(
     , .cond_met_t( cond_met )
     , .instruction_codes_t( inst_codes_test )
 	 , .counting_stalls( counting_stalls )
-	 , .r_not_w( r_not_w )
+	 , .register_ALU( register_ALU )
   );
 
-wire [31:0] teser_reg;
+wire [31:0] tester_reg;
 
   mem memory_module (
       .clk_i( clk )
@@ -153,7 +154,7 @@ wire [31:0] teser_reg;
     , .load_o( load_mem_wb )
     , .flush_o( flush_mem_to_exec )
 	 , .r_not_w( r_not_w )
-	 , .teser_reg( teser_reg )
+	 , .tester_reg( tester_reg )
   );
 
   write_back wb_module(
@@ -178,16 +179,16 @@ wire [31:0] teser_reg;
   assign debug_port2 = r1_rm_to_exec[0+:8];
   assign debug_port3 = r2_rm_to_exec[0+:8];
   assign debug_port4 = alu_data_exec[0+:8];
-  assign debug_port5 = teser_reg[0+:8];//rd_data_exec_to_mem[0+:8]; //inst_fetch_to_decode[19:16];
-  assign debug_port6 = { wb_en
+  assign debug_port5 = tester_reg[0+:8];//rd_data_exec_to_mem[0+:8]; //inst_fetch_to_decode[19:16];
+  assign debug_port6 = rd_data_exec_to_mem[0+:8];/*{ wb_en
                         , branch
                         , pc_wb
                         , flush_exec_to_decode
 								, counting_stalls[0+:2]
                         , stall_exec_to_decode
                         , valid_fetch_to_decode
-                        };//mem_data_o; //{ cond_met, 1'b0, n_flag, z_flag, 2'b0, c_flag, v_flag };
-  assign debug_port7 = { 3'b0, r_not_w, rd_data_exec_to_mem[0+:4] };//{ r1_addr_rm_to_exec, r2_addr_rm_to_exec };//{ 4'b0, cond_met, inst_codes_test };//mem_addr[0+:8];
+                        };//mem_data_o; //{ cond_met, 1'b0, n_flag, z_flag, 2'b0, c_flag, v_flag };*/
+  assign debug_port7 = { 2'b0, valid_exec_to_mem, r_not_w, alu_data_exec[0+:4] };//{ r1_addr_rm_to_exec, r2_addr_rm_to_exec };//{ 4'b0, cond_met, inst_codes_test };//mem_addr[0+:8];
 
 
 endmodule

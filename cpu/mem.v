@@ -14,8 +14,8 @@ module mem (
   , output reg do_write_o
   , output wire flush_o
   , output reg load_o
-  , input wire r_not_w
-  , output [31:0] teser_reg
+  , output wire r_not_w
+  , output wire [31:0] tester_reg
 );
 
   /////////// wire/reg  ///////////
@@ -29,7 +29,7 @@ module mem (
   assign s_bit = inst_i[20];
   assign wb_addr = inst_i[15:12];
   assign instruction_codes = inst_i[25+:3];
-  //assign r_not_w = ~(instruction_codes == 3'b010 & ~s_bit);
+  assign r_not_w = ~(instruction_codes == 3'b010 & ~s_bit);
   assign flush_o = flush_i;
 
   memory mem (  .clk_i(clk_i)
@@ -39,7 +39,7 @@ module mem (
               , .r_not_w_i(r_not_w)
               , .valid_i(valid_i)
               , .data_o(mem_data_o)  //already pipeline
-				  , .teser_reg( teser_reg)
+				  , .tester_reg( tester_reg )
               );
 
 	/*reg [31:0] inst

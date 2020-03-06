@@ -27,7 +27,7 @@ module execute (
   , output cond_met_t
   , output [2:0] instruction_codes_t
   , output [2:0] counting_stalls
-  , output r_not_w
+  , output [31:0] register_ALU
 );
 
   reg branch;
@@ -69,7 +69,7 @@ module execute (
   assign cond = inst_i[28+:4];
   assign U_bit = inst_i[23];
   assign ALU_opcode = instruction_codes == 3'b010 ? U_bit ? 4'b0100 : 4'b0010 : opcode;
-  assign r_not_w = ~(instruction_codes == 3'b010 & ~s_bit);
+  
 
   //////////// pipeline registers ////////////
   always @(posedge clk_i) begin
@@ -91,7 +91,7 @@ module execute (
         ALU_data_o <= ALU_data;
         do_write_o <= do_write;
         rd_addr_o <= rd_addr_i;
-        rd_data_o <= r1;
+        rd_data_o <= ( rd_addr_o == r1_addr_i ) ? ALU_data_o : r1_i;
       end
     end
   end
@@ -176,9 +176,10 @@ module execute (
                     , .r1_shift_o(r1_shift)
                     );
 
-  assign r1_ALU = (instruction_codes == 3'b010 && ~s_bit) ? {20'b0, inst_i[11:0]} :
+  assign r1_ALU = (instruction_codes == 3'b010 && ~s_bit) ? {20'b0, inst_i[0+:12]} :
                   instruction_codes == 3'b000 ? r1_shift : operand2;
   assign r2_ALU = r2;
+  assign register_ALU = r2;
 
   // ************************************
   // ************** DO_WRITE ************
@@ -233,7 +234,7 @@ module execute (
     else
       stall = 0;
   end
-  assign stall_o = ( counting_stalls_n != 3'b111 && counting_stalls_n != 3'b00 );
+  assign stall_o = ( counting_stalls_n != 3'b011 && counting_stalls_n != 3'b00 );
   
 
 endmodule

@@ -20,15 +20,15 @@ module register_file(
     a_o <= registers[a_addr_i];
     b_o <= registers[b_addr_i];
     if ( wr_en_i ) begin
-		for ( i = 0; i < 16; i = i + 1 )
-			if ( i == wr_addr_i )
+		//for ( i = 0; i < 16; i = i + 1 )
+			//if ( i == wr_addr_i )
 				registers[wr_addr_i] <= data_i;
-			else
-				registers[i] <= registers[i];
+			//else
+				//registers[i] <= registers[i];
 	end
-		else
+		/*else
 			for ( i = 0; i < 16; i = i + 1 )
-				registers[i] <= registers[i];
+				registers[i] <= registers[i];*/
 
   end
 
