@@ -55,7 +55,7 @@ module decode_reg_r (
                     );
 
   always @(posedge clk_i) begin
-    if ( reset_i || flush_i ) begin
+    if ( reset_i ) begin
       valid_o <= 1'b0;
       inst_o <= 0;
     end
@@ -64,7 +64,10 @@ module decode_reg_r (
       inst_o <= inst_o;
     end
     else begin
-      valid_o <= valid_i;
+      if (flush_i)
+        valid_o <= 0;
+      else
+        valid_o <= valid_i;
       inst_o <= inst_i;
     end
   end

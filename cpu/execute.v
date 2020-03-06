@@ -80,19 +80,11 @@ module execute (
       rd_addr_o <= 0;
       rd_data_o <= 0;
     end else begin
-      if(stall) begin
-        inst_o <= inst_o;
-        ALU_data_o <= ALU_data_o;
-        do_write_o <= do_write_o;
-        rd_addr_o <= rd_addr_o;
-        rd_data_o <= rd_data_o;
-      end else begin
         inst_o <= inst_i;
         ALU_data_o <= ALU_data;
         do_write_o <= do_write;
         rd_addr_o <= rd_addr_i;
         rd_data_o <= ( rd_addr_o == r1_addr_i ) ? ALU_data_o : r1_i;
-      end
     end
   end
 
@@ -101,13 +93,10 @@ module execute (
     if(reset_i) begin
       valid_o <= 1'b0;
     end else begin
-      if(~stall) begin
-        if ( flush_i || ( branch_o ) || ~cond_met )
+        if ( flush_i || ( branch_o ) || ~cond_met || stall )
           valid_o <= 1'b0;
         else
           valid_o <= valid_i;
-      end else
-        valid_o <= valid_o;
     end
   end
 
@@ -224,7 +213,7 @@ module execute (
 
 
   always @(*) begin
-    if (instruction_codes_old == 3'b010)
+    if (instruction_codes_old == 3'b010 & valid_o)
       if(instruction_codes == 3'b000)
         stall = (r1_addr_i == rd_addr_o | r2_addr_i == rd_addr_o );
       else if (instruction_codes == 3'b001)
@@ -234,7 +223,7 @@ module execute (
     else
       stall = 0;
   end
-  assign stall_o = ( counting_stalls_n != 3'b111 && counting_stalls_n != 3'b00 );
 
+  assign stall_o = ( counting_stalls_n != 3'b111 && counting_stalls_n != 3'b000 );
 
 endmodule

@@ -3,3 +3,5 @@
 hardware.asc
 hardware.bin
 hardware.blif
+.sconsign.dblite
+hardware.bin
