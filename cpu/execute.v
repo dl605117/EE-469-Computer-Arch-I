@@ -82,7 +82,7 @@ module execute (
     end else begin
       if(stall) begin
         inst_o <= inst_o;
-        ALU_data_o <= ALU_data_o;
+        ALU_data_o <= ALU_data;
         do_write_o <= do_write_o;
         rd_addr_o <= rd_addr_o;
         rd_data_o <= rd_data_o;
@@ -234,7 +234,7 @@ module execute (
     else
       stall = 0;
   end
-  assign stall_o = ( counting_stalls_n != 3'b111 && counting_stalls_n != 3'b00 );
+  assign stall_o = ( counting_stalls_n != 3'b010 && counting_stalls_n != 3'b00 );
 
 
 endmodule
