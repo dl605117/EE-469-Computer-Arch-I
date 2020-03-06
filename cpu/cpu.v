@@ -188,7 +188,7 @@ wire [31:0] tester_reg;
                         , stall_exec_to_decode
                         , valid_fetch_to_decode
                         };//mem_data_o; //{ cond_met, 1'b0, n_flag, z_flag, 2'b0, c_flag, v_flag };*/
-  assign debug_port7 = { 2'b0, valid_exec_to_mem, r_not_w, alu_data_exec[0+:4] };//{ r1_addr_rm_to_exec, r2_addr_rm_to_exec };//{ 4'b0, cond_met, inst_codes_test };//mem_addr[0+:8];
+  assign debug_port7 = { 5'b0, inst_codes_test };//{ 2'b0, valid_exec_to_mem, r_not_w, alu_data_exec[0+:4] };//{ r1_addr_rm_to_exec, r2_addr_rm_to_exec };//{ 4'b0, cond_met, inst_codes_test };//mem_addr[0+:8];
 
 
 endmodule
