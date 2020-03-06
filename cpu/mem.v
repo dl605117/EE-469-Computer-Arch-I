@@ -14,8 +14,8 @@ module mem (
   , output reg do_write_o
   , output wire flush_o
   , output reg load_o
-  , input wire r_not_w
-  , output [31:0] teser_reg
+  , output wire r_not_w
+  , output wire [31:0] tester_reg
 );
 
   /////////// wire/reg  ///////////
@@ -39,7 +39,7 @@ module mem (
               , .r_not_w_i(r_not_w)
               , .valid_i(valid_i)
               , .data_o(mem_data_o)  //already pipeline
-				  , .teser_reg( teser_reg)
+				  , .tester_reg( tester_reg )
               );
 
 	/*reg [31:0] inst

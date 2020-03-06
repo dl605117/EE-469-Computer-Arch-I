@@ -5,7 +5,7 @@ module memory ( input clk_i
   , input wire r_not_w_i
   , input wire valid_i
   , output reg [31:0] data_o
-  , output [31:0] teser_reg
+  , output wire [31:0] tester_reg
   );
 
   reg [31:0] memory [0:11];
