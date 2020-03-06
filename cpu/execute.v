@@ -102,7 +102,7 @@ module execute (
       valid_o <= 1'b0;
     end else begin
       if(~stall) begin
-        if ( flush_i || ( branch_o ) )
+        if ( flush_i || ( branch_o ) || ~cond_met )
           valid_o <= 1'b0;
         else
           valid_o <= valid_i;
@@ -185,7 +185,7 @@ module execute (
   // ************************************
   // solely for writebacks to register file
   always @(*) begin
-    if ( cond_met )
+    if ( cond_met && valid_i)
       if ( ( instruction_codes == 3'b000 || instruction_codes == 3'b001 ) && s_bit ) // if write to registers and normal op
         do_write = 1'b1;
       else if ( instruction_codes == 3'b010 && s_bit == 1'b1 ) // Only write if LOADing
@@ -203,25 +203,25 @@ module execute (
 	//reg counting_stalls_in;
 	wire [3:0] instruction_codes_old;
   assign instruction_codes_old = inst_o[25+:3];
-	
-	
+
+
 	reg [2:0] counting_stalls_r;
 	reg [2:0] counting_stalls_n;
 	assign counting_stalls = counting_stalls_r;
-	
+
 	always @(*)
 		if ( stall )
 			counting_stalls_n = counting_stalls_r + 1;
 		else
 			counting_stalls_n = 3'b0;
-	
+
 	always @(posedge clk_i)
-		if ( reset_i ) 
+		if ( reset_i )
 			counting_stalls_r <= 3'b0;
 		else
 			counting_stalls_r <= counting_stalls_n;
-  
-  
+
+
   always @(*) begin
     if (instruction_codes_old == 3'b010)
       if(instruction_codes == 3'b000)
@@ -234,6 +234,6 @@ module execute (
       stall = 0;
   end
   assign stall_o = ( counting_stalls_n != 3'b111 && counting_stalls_n != 3'b00 );
-  
+
 
 endmodule

@@ -9,7 +9,7 @@ module memory ( input clk_i
   );
 
   reg [31:0] memory [0:11];
-  
+
 
   integer i;
   initial begin
@@ -24,18 +24,13 @@ module memory ( input clk_i
         memory[i] <= 32'b0;
     end
     else if(valid_i) begin
-      
       if ( r_not_w_i )
-			data_o <= memory[data_addr_i];
-		else begin
-			memory[data_addr_i] <= data_i;
-			data_o <= 32'b0;
-		end
+			   data_o <= memory[data_addr_i];
+		  else
+			   memory[data_addr_i] <= data_i;
     end
-	 else
-		data_o <= 32'b0;
   end
-  
+
 	assign tester_reg = memory[0];
-	
+
 endmodule

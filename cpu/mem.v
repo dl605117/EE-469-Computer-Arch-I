@@ -29,7 +29,7 @@ module mem (
   assign s_bit = inst_i[20];
   assign wb_addr = inst_i[15:12];
   assign instruction_codes = inst_i[25+:3];
-  //assign r_not_w = ~(instruction_codes == 3'b010 & ~s_bit);
+  assign r_not_w = ~(instruction_codes == 3'b010 & ~s_bit);
   assign flush_o = flush_i;
 
   memory mem (  .clk_i(clk_i)
