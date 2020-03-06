@@ -12,7 +12,7 @@ module fetch (
   , output wire [31:0] pc
   //, output wire [31:0] old_inst_o
 );
-  
+
   reg [31:0] pc_r, pc_n;
   wire pc_plus_4;
   wire pc_plus_8;
@@ -21,20 +21,20 @@ module fetch (
   assign pc_plus_8 = pc_r + 8;
   assign pc_plus_12 = pc_r + 12;
 
-  
+
   code_memory cm (  .clk(clk_i)
                   , .pc_i(pc_r)
                   , .inst(inst_o)
                   );
 
   initial pc_r = 32'b0;
-  
-  
+
+
   /*reg [31:0] inst_out;
   reg [31:0] old_inst;
   always @(posedge clk_i)
 	old_inst <= inst;
-	
+
 	always @(*)
 		if ( stall_i )
 			inst_out <= old_inst;
@@ -75,10 +75,10 @@ module fetch (
   // ************************************
   // *************** Valid **************
   // ************************************
-  always @(*)
+  always @(posedge clk_i)
     if ( reset_i || flush_i )
-      valid_o = 1'b0;
+      valid_o <= 1'b0;
     else
-      valid_o = 1'b1;
+      valid_o <= 1'b1;
 
 endmodule
