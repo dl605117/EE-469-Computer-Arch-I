@@ -138,18 +138,18 @@ module execute (
   // *********** Data Hazard ************
   // ************************************
   always @(*) begin
-    if (wb_addr_i == r1_addr_i && wb_en_i)
-      r1 = wb_data_i;
-    else if (rd_addr_o == r1_addr_i && valid_o && do_write_o)
+    if (rd_addr_o == r1_addr_i && valid_o && do_write_o)
       r1 = ALU_data_o;
+    else if (wb_addr_i == r1_addr_i && wb_en_i)
+      r1 = wb_data_i;
     else if (r1_addr_i == 4'b1111)
       r1 = pc;
     else
       r1 = r1_i;
-    if (wb_addr_i == r2_addr_i && wb_en_i)
-      r2 = wb_data_i;
-    else if (rd_addr_o == r2_addr_i && valid_o && do_write_o)
+    if (rd_addr_o == r2_addr_i && valid_o && do_write_o)
       r2 = ALU_data_o;
+    else if (wb_addr_i == r2_addr_i && wb_en_i)
+      r2 = wb_data_i;
     else if (r2_addr_i == 4'b1111)
       r2 = pc;
     else

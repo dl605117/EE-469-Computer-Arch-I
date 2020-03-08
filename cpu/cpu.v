@@ -142,6 +142,7 @@ wire [31:0] tester_reg;
     , .reset_i( reset )
     , .ALU_data_i( alu_data_exec )
     , .store_data_i( rd_data_exec_to_mem )
+    , .rd_addr_i (rd_addr_exec_to_mem)
     , .inst_i( inst_exec_to_mem )
     , .valid_i( valid_exec_to_mem )
     , .flush_i( flush_wb_to_mem )
