@@ -194,7 +194,6 @@ module execute (
 	wire [3:0] instruction_codes_old;
   assign instruction_codes_old = inst_o[25+:3];
 
-
 	reg [2:0] counting_stalls_r;
 	reg [2:0] counting_stalls_n;
 	assign counting_stalls = counting_stalls_r;
