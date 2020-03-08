@@ -29,27 +29,6 @@ module fetch (
 
   initial pc_r = 32'b0;
 
-
-  /*reg [31:0] inst_out;
-  reg [31:0] old_inst;
-  always @(posedge clk_i)
-	old_inst <= inst;
-
-	always @(*)
-		if ( stall_i )
-			inst_out <= old_inst;
-		else
-			inst_out <= inst;
-	assign inst_o = inst_out;*/
-	//assign cm_pc = stall_i ? pc_n : pc_r;
-	/*
-	always @(*) begin
-		if ( stall_i )
-			cm_pc = pc_n;
-		else
-			cm_pc = pc_r;
-	end*/
-
   // ************************************
   // ********* Increment PC *************
   // ************************************
