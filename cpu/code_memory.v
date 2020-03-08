@@ -4,6 +4,7 @@ module code_memory (
   , output reg [31:0] inst
 );
   reg [7:0] code_memory [0:67];
+  wire [31:0] instruction;
 /*
   initial begin
     { code_memory[0], code_memory[1], code_memory[2], code_memory[3] } <= 32'b0000_000_0100_1_0010_0000_00000_00_0_0001; // add r0, r1, r2
@@ -36,14 +37,16 @@ module code_memory (
     { code_memory[32], code_memory[33], code_memory[34], code_memory[35] } <= 32'b1110_010_11001_0000_0110_000000000000; // ldr r6 0x0 (offset from r0)
     { code_memory[36], code_memory[37], code_memory[38], code_memory[39] } <= 32'b1110_000_0100_1_0110_1000_00000_00_0_0000; // add r8 r0 r6
     { code_memory[40], code_memory[41], code_memory[42], code_memory[43] } <= 32'b1110_000_0100_1_0011_0100_00000_00_0_0010; // add r4, r2, r3
-    { code_memory[44], code_memory[45], code_memory[46], code_memory[47] } <= 32'b0000_000_0100_1_0011_0100_00000_00_0_0010; // add r4, r2, r3
-    { code_memory[48], code_memory[49], code_memory[50], code_memory[51] } <= 32'b0000_001_0100_1_0111_1011_0000_00000001; // sub r11, r7, #1
-    { code_memory[52], code_memory[53], code_memory[54], code_memory[55] } <= 32'b0000_000_0100_1_0010_1001_00000_00_0_0001; // add r9, r1, r2
-    { code_memory[56], code_memory[57], code_memory[58], code_memory[59] } <= 32'b0000_101_1_00000000_00000000_00000000; // blEQ 0x4
-    { code_memory[60], code_memory[61], code_memory[62], code_memory[63] } <= 32'b1110_101_1_11111111_11111111_11110001; // blAL 0x4
+    { code_memory[44], code_memory[45], code_memory[46], code_memory[47] } <= 32'b1110_000_0100_1_0011_0100_00000_00_0_0010; // add r4, r2, r3
+    { code_memory[48], code_memory[49], code_memory[50], code_memory[51] } <= 32'b1110_001_0100_1_0111_1011_0000_00000001; // sub r11, r7, #1
+    { code_memory[52], code_memory[53], code_memory[54], code_memory[55] } <= 32'b0000_101_1_00000000_00000000_00000000; // blEQ 0x4
+    { code_memory[56], code_memory[57], code_memory[58], code_memory[59] } <= 32'b1110_101_1_11111111_11111111_11110010; // blAL 0x4
+    { code_memory[60], code_memory[61], code_memory[62], code_memory[63] } <= 32'b1110_000_0100_1_0010_1001_00000_00_0_0001; // add r9, r1, r2
     { code_memory[64], code_memory[65], code_memory[66], code_memory[67] } <= 32'b0000_001_0010_0_0111_1011_0000_00000001; // sub r11, r7, #1  // Will not reach
   end
 
   always @(posedge clk)
-    inst <= { code_memory[pc_i], code_memory[pc_i+1], code_memory[pc_i+2], code_memory[pc_i+3] };
+    inst <= instruction;
+
+  assign instruction = { code_memory[pc_i], code_memory[pc_i+1], code_memory[pc_i+2], code_memory[pc_i+3] };
 endmodule

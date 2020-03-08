@@ -52,13 +52,14 @@ module execute (
   wire [31:0] r1_ALU;
   wire [31:0] r2_ALU;
   reg stall;
+  wire [31:0] pc;
 
   /////////// Assign statements ///////////
   assign branch_o = branch;
 
   assign cond_met_t = cond_met;
   assign instruction_codes_t = instruction_codes;
-
+  assign pc = pc_i + ~{28'b0, 4'b1000} + 1;
   assign opcode = inst_i[21+:4];
   assign instruction_codes = inst_i[25+:3];
   assign immediate = inst_i[0+:8];
@@ -142,7 +143,7 @@ module execute (
     else if (rd_addr_o == r1_addr_i && valid_o && do_write_o)
       r1 = ALU_data_o;
     else if (r1_addr_i == 4'b1111)
-      r1 = pc_i;
+      r1 = pc;
     else
       r1 = r1_i;
     if (wb_addr_i == r2_addr_i && wb_en_i)
@@ -150,7 +151,7 @@ module execute (
     else if (rd_addr_o == r2_addr_i && valid_o && do_write_o)
       r2 = ALU_data_o;
     else if (r2_addr_i == 4'b1111)
-      r2 = pc_i;
+      r2 = pc;
     else
       r2 = r2_i;
   end
